@@ -1,5 +1,5 @@
 String index_html = R"(
-  <!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang='en'>
 <head>
     <meta charset='UTF-8'>
@@ -366,7 +366,13 @@ background: #208371;
   }
 
 
-
+#timer{
+  width: 100%;
+  text-align: center;
+  font-size: x-large;
+  color: #fff;
+  margin:0 px;
+}
 
 
 
@@ -532,13 +538,10 @@ background: #208371;
     لايوجد اتصال
 </div></div>
 
-
+<div id='timer'>-</div>
 </div>
 
 
-
-
-</div>
 </body>
 <footer>
 
@@ -569,11 +572,25 @@ background: #208371;
 </footer>
 
 <script>
+  const formatTime=(seconds)=> {
+    if (isNaN(seconds) || seconds < 0) {
+      return '-';
+    }
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+  
+    const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+    const formattedSeconds = remainingSeconds < 10 ? `0${remainingSeconds}` : `${remainingSeconds}`;
+  
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
+  }
 
 setInterval(()=>{
         new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/statewdx';
+            const url = 'http://192.168.4.1/state';
             xhr.onreadystatechange = async() => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -604,6 +621,12 @@ setInterval(()=>{
                     document.getElementById('run_sign').style.backgroundColor='green';
                   else
                      document.getElementById('run_sign').style.backgroundColor='#3c3838';
+                     // set the timer
+                  if(xhr.responseText.split('#')[5]!=undefined)
+                    document.getElementById('timer').innerHTML=formatTime(parseInt(xhr.responseText.split('#')[5]));
+                    //setTimer(formatTime(parseInt(xhr.responseText.split('#')[5])));
+                  else
+                    setTimer('-');
                   
                 } else {
                     document.getElementById('isconnected').style.display='block'; // no connection

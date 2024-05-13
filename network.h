@@ -210,7 +210,7 @@ color:#01fff4;
             const repeatedPassword = document.getElementById('rep_password').value;
             const newssid = document.getElementById('new_ssid').value;
             
-    if(oldPassword.length >= 8 && newPassword.length>=8 && repeatedPassword.length>=8){
+    if(newPassword.length>=8 && repeatedPassword.length>=8){
         if(newPassword==repeatedPassword){
                 document.getElementsByClassName('error-message')[0].innerText=' ';
             try {

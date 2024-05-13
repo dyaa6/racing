@@ -1,6 +1,5 @@
 String onpress= R"(
-
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang='en'>
 <head>
     <meta charset='UTF-8' name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -52,7 +51,7 @@ body{
     padding: 15px;
     padding-inline-start: 40px;
     padding-inline-end: 40px;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 60%;
 }
 
@@ -282,10 +281,10 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
     <div class='item'>
       عدد محاولات التشغيل
     </div>
-    <div class='item'><input type='number' value='5' id='timeV'/></div>
+    <div class='item'><input type='number' value='5' id='tryValue'/></div>
 </div>
     <div class='row' id='msg'>
-      لايوجد اتصال
+      
     </div>
     <button id='save' onclick='setTimer()'>
         حفظ
@@ -313,7 +312,7 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 
       </menu>
 
-      <script>
+<script>
         const goSettings=()=>{
             window.open('settings.html', '_self');
             }
@@ -321,46 +320,55 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
         const goHome=()=>{
             window.open('index.html', '_self');
             }
+
+    setInterval(()=>{
+      let text=document.getElementById('tryValue').value;
+      let numericValue = text.replace(/[^0-9]/g, ''); 
+      let limitedValue = numericValue.slice(0, 3);
+      document.getElementById('tryValue').value=limitedValue;
+    },100);
     const switch1=document.getElementById('sw1');
-const changeState=()=>{
-  document.getElementById('msg').innerHTML='';
-  if(switch1.checked){
-    document.getElementsByClassName('row2')[0].style.display='flex';
-  }
-  else{
-    document.getElementsByClassName('row2')[0].style.display='none';
-  }
-}
+      const changeState=()=>{
+        document.getElementById('msg').innerHTML='';
+        if(switch1.checked){
+          document.getElementsByClassName('row2')[0].style.display='flex';
+        }
+        else{
+          document.getElementsByClassName('row2')[0].style.display='none';
+        }
+      }
 
 const setTimer= ()=>{
-    const timeValue=document.getElementById('timeV').value;
+    const tryValue=document.getElementById('tryValue').value;
     try {
       //setResponseText(response);
-      if ((timeValue == '' || timeValue == 0)&& switch1.checked) {
+      if ((tryValuealue == '' || tryValuealue == 0)&& switch1.checked) {
         document.getElementById('msg').innerHTML=('يجب أن تدخل قيمة');
         document.getElementById('msg').style.color='orange';
         return;
       }
       else{
-        if(switch1.checked){
+          if(switch1.checked){
         new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          const url = 'http://192.168.4.1/setUpTimer?value='+timeValue*60+'&state=on';
+          const url = 'http://192.168.4.1/setAuto?numOfTries='+tryValue+'&state=on';
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 200) {
-                  if(xhr.responseText=='Timer enabled'){
-                    document.getElementById('msg').innerHTML=('تم حفظ التغييرات');
-                    document.getElementById('msg').style.color='green';
+                  if(xhr.responseText=='auto mode'){
+                      setMsg('تم حفظ التغييرات');
+                      setsucsess(true);
+                      setIsLoading(false);
                   }
               } else {
-                document.getElementById('msg').innerHTML=('لايوجد اتصال بالسيارة');
-                document.getElementById('msg').style.color='red';
+                setMsg('هناك خطأ ما !');
+                setsucsess(false);
+                setIsLoading(false);
               }
             }
           };
           xhr.open('GET', url, true);
-          xhr.timeout = 500; 
+          xhr.timeout = 2000; // set the timeout to 2 seconds
           xhr.send();
         });
         
@@ -368,29 +376,31 @@ const setTimer= ()=>{
         else{//not enabled
           new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/setUpTimer?value=0&state=off';
+            const url = 'http://192.168.4.1/setAuto?numOfTries=0&state=off';
             xhr.onreadystatechange = () => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
-                    if(xhr.responseText=='Timer enabled'){
-                      document.getElementById('msg').innerHTML=('تم حفظ التغييرات');
-                      document.getElementById('msg').style.color='green';
+                    if(xhr.responseText=='manual mode'){
+                        setMsg('تم حفظ التغييرات');
+                        setsucsess(true);
+                        setIsLoading(false);
                     }
                 } else {
-                  document.getElementById('msg').innerHTML=('لايوجد اتصال بالسيارة');
-                  document.getElementById('msg').style.color='red';
+                  setMsg('هناك خطأ ما !');
+                  setsucsess(false);
+                  setIsLoading(false);
                 }
               }
             };
             xhr.open('GET', url, true);
-            xhr.timeout = 500; 
+            xhr.timeout = 2000; // set the timeout to 2 seconds
             xhr.send();
           });
         }
       }
       } catch (error) {
-                  document.getElementById('msg').innerHTML=('لايوجد اتصال بالسيارة');
-                  document.getElementById('msg').style.color='red';
+                  // document.getElementById('msg').innerHTML=('لايوجد اتصال بالسيارة');
+                  // document.getElementById('msg').style.color='red';
     }
 }
       </script>

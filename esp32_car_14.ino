@@ -190,7 +190,7 @@ void setup() {
   server.on("/lock",close_car);
   server.on("/trunk",handle_openBox);
   server.on("/currentPassword",dev_password);
-  server.on("/formatesp",format);
+  server.on("/format",format);
   server.on("/dev_ver",deviceVersion);
   server.on("/dev_id",devId);
   server.on("/dev_model",devModel);
@@ -208,7 +208,7 @@ void setup() {
   server.on("/resetAll",resetAll);
   server.on("/switch1_state",SW_state);
   server.on("/setTimer",handleSetTimer);
-  server.on("/setUpAuto",handleAutoStart);
+  server.on("/setAuto",handleAutoStart);
   server.on("/timerState",handleTimerState);
   server.on("/autoState",handleAutoState);
   server.on("/networkConfig",handleNewNetwork);
@@ -218,6 +218,9 @@ void setup() {
   
   // get RF states
   server.on("/opn_state",handleOpenStateFlag);
+  server.on("/index.html",[](){
+      server.send(200, "text/html", index_html);
+  });
   server.on("/",[](){
       server.send(200, "text/html", index_html);
   });
@@ -436,6 +439,10 @@ if(!digitalRead(sw2)){
           }
     void RunTheCar() {
           if(!digitalRead(sensor_pin)){
+            if(!digitalRead(sw1)){
+              digitalWrite(sw1,HIGH);
+              digitalWrite(sw2,HIGH);
+            }
             digitalWrite(btn3,HIGH);
             run_flag=1;
             isPressedDown=false;

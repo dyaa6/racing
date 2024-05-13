@@ -204,28 +204,27 @@ body{
         </button>
 
       </menu>
-
-        <script>
+   <script>
         const goSettings=()=>{
-            window.open('settings', '_self');
+            window.open('settings.html', '_self');
             }
         const goNetwork=()=>{
-            window.open('network', '_self');
+            window.open('network.html', '_self');
             }
         const goHome=()=>{
             window.open('/', '_self');
             }
         const goRemote=()=>{
-            window.open('remote', '_self');
+            window.open('remote.html', '_self');
             }
         const goUpdate=()=>{
-            window.open('update', '_self');
+            window.open('update.html', '_self');
             }
         const goTimer=()=>{
-            window.open('timer', '_self');
+            window.open('timer.html', '_self');
             }
         const goOnePress=()=>{
-            window.open('onepress', '_self');
+            window.open('onepress.html', '_self');
             }
       </script>
 </footer>

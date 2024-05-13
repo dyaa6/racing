@@ -171,7 +171,7 @@ color:#01fff4;
         لايوجد اتصال
     </div>
     <div class='item-container'>
-        <div class='item' id='powerOff' onclick='auth(`powerOff`)'>
+        <div class='item' id='powerOff' onclick='auth(`authPower`)'>
             <div class='row'>
              إطفاء
              <svg width='45px' height='45px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' stroke='#ffffff'>
