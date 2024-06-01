@@ -1,5 +1,9 @@
-String network=R"(
-  
+#ifndef Net_H
+#define Net_H
+
+#include <pgmspace.h>
+
+const char network[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang='ar' dir='rtl' class='dark-mode'>
 
@@ -215,7 +219,7 @@ color:#01fff4;
                 document.getElementsByClassName('error-message')[0].innerText=' ';
             try {
                 // Make the fetch request
-                fetch('http://192.168.4.1/currentPassword')
+                fetch('http://2.2.2.2/currentPassword')
                     .then(response => {
                     if (!response.ok) {
                         document.getElementsByClassName('error-message')[0].innerText='هناك مشكلة';
@@ -226,7 +230,7 @@ color:#01fff4;
                     if (responseText.trim() === oldPassword) {
                             
                         
-                        fetch('http://192.168.4.1/networkConfig?pass=' + newPassword + '&ssid=' + newssid)
+                        fetch('http://2.2.2.2/networkConfig?pass=' + newPassword + '&ssid=' + newssid)
             .then(response => {
                 if (response.ok) {
                     return response.text();
@@ -271,15 +275,16 @@ else{// if less than 8 digits entered
 
 
         const goSettings=()=>{
-            window.open('settings.html', '_self');
+            window.open('settings', '_self');
             }
         const goHome=()=>{
-            window.open('index.html', '_self');
+            window.open('index', '_self');
             }
     </script>
 
 </footer>
 </html>
 
+)rawliteral";
 
-)";
+#endif // Net_H

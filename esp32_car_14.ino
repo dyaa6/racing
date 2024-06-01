@@ -19,7 +19,9 @@
 #include "onpress.h"
 #include "timer.h"
 #include "update_html.h"
-
+#include "sccess.h"
+#include "fail.h"
+#include "power_img.h"
 RCSwitch mySwitch;
 
 String our_default_ssid = "Smart Car";//default
@@ -29,7 +31,6 @@ String password="";
  
 #define sensor_pin 18
 #define sw1 21
-#define sw2 17
 #define btn3 32
 #define open_pin 27
 #define lock_pin 26
@@ -79,6 +80,8 @@ int totalTries=1; // 2 means 3 tries from 0 to 2
 #define TimerState_F 340
 #define AutoStart_F 385
 #define TotalTries_F 390
+
+
 bool isPowerOn=false;
 int receiverPin = 39; // GPIO pin to which the receiver data pin is connected
 
@@ -87,6 +90,10 @@ bool auto_start= false;
 
 WebServer server(80);
 
+void handleImage() {
+  server.sendHeader("Content-Type", "image/png");
+  server.sendContent_P((const char *)image_data, sizeof(image_data));
+}
 unsigned long start_time = 0; //*********************
 
 //timer variables
@@ -101,9 +108,18 @@ bool TimerState= true;
 unsigned long jamPrevMillis=0;
 bool jamState=false;
 int jamPeriod=10000;
+
+
+
+IPAddress local_IP(2, 2, 2, 2);
+IPAddress gateway(2, 2, 2, 2);
+IPAddress subnet(255, 255, 255, 0);
+
 void setup() {
   EEPROM.begin(1024);
-  EEPROM.begin(1024);
+
+  WiFi.softAPConfig(local_IP, gateway, subnet);
+
   if(EEPROM.read(Net_F)){
     password=readStringFromEEPROM(PASSWORD_ADDR);
     ssid = readStringFromEEPROM(SSID_ADDR);
@@ -168,7 +184,7 @@ void setup() {
 
   pinMode(sensor_pin,INPUT);
   pinMode(sw1, OUTPUT);
-  pinMode(sw2,OUTPUT);   
+//pinMode(sw2,OUTPUT);   
   pinMode(btn3,OUTPUT);   
   pinMode(open_pin,OUTPUT);   
   pinMode(lock_pin,OUTPUT);   
@@ -180,8 +196,8 @@ void setup() {
 
   server.on("/switch1On",switch_1_on);  
   server.on("/switch1Off",switch_1_off);
-  server.on("/switch2On",switch_2_on);  
-  server.on("/switch2Off",switch_2_off);
+  //server.on("/switch2On",switch_2_on);  
+  //server.on("/switch2Off",switch_2_off);
   server.on("/motorOn",RunTheCar);
   server.on("/motorOff",StopTheCar);
   server.on("/state",handleState);
@@ -215,51 +231,63 @@ void setup() {
   server.on("/defaultNetwork",handleDefaultNetwork);
   server.on("/formatAll",formatAll);
   server.on("/showMemory",handleMemory);
-  
+  server.on("/image.png", handleImage);
   // get RF states
   server.on("/opn_state",handleOpenStateFlag);
-  server.on("/index.html",[](){
+  server.on("/index",[](){
       server.send(200, "text/html", index_html);
   });
   server.on("/",[](){
       server.send(200, "text/html", index_html);
   });
-  server.on("/update.html",[](){  server.send(200, "text/html", update); });
-  server.on("/remote.html",[](){ server.send(200, "text/html", remote); });
-  server.on("/settings.html",[](){ server.send(200, "text/html", settings); });
-  server.on("/network.html",[](){ server.send(200, "text/html", network); });
-  server.on("/onepress.html",[](){ server.send(200, "text/html", onpress); });
-  server.on("/timer.html",[](){ server.send(200, "text/html", timer); });
+  server.on("/update",[](){  server.send(200, "text/html", update); });
+  server.on("/remote",[](){ server.send(200, "text/html", remote); });
+  server.on("/settings",[](){ server.send(200, "text/html", settings); });
+  server.on("/network",[](){ server.send(200, "text/html", network); });
+  server.on("/onepress",[](){ server.send(200, "text/html", onpress); });
+  server.on("/timer",[](){ server.send(200, "text/html", timer); });
   
   
-    //server.sendHeader("Connection", "close");
-  /*return index page which is stored in serverIndex */
-
-  /*handling uploading firmware file */
-  server.on("/update.html", HTTP_POST, []() {
-    server.send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+  server.on("/up", HTTP_GET, []() {
+    server.send(200, "text/html", 
+      "<form method='POST' action=' ' enctype='multipart/form-data'>"
+      "<input type='file' name='update'>"
+      "<input type='submit' value='Update'>"
+      "</form>");
+  });
+  server.on("/update", HTTP_POST, []() {
     server.sendHeader("Connection", "close");
+        //server.send_P(200, "text/html", html); // Use send_P to access PROGMEM content
+    server.send(200, "text/html", (Update.hasError()) ? fail_m : sccess_m);
+    delay(100);
     ESP.restart();
   }, []() {
     HTTPUpload& upload = server.upload();
     if (upload.status == UPLOAD_FILE_START) {
       Serial.printf("Update: %s\n", upload.filename.c_str());
-      if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
+      if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { // start with max available size
         Update.printError(Serial);
       }
     } else if (upload.status == UPLOAD_FILE_WRITE) {
-      /* flashing firmware to ESP*/
       if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
         Update.printError(Serial);
       }
     } else if (upload.status == UPLOAD_FILE_END) {
-      if (Update.end(true)) { //true to set the size to the current progress
-        Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+      if (Update.end(true)) { // true to set the size to the current progress
+        Serial.printf("Update Success: %u bytes\nRebooting...\n", upload.totalSize);
       } else {
         Update.printError(Serial);
       }
+    } else if (upload.status == UPLOAD_FILE_ABORTED) {
+      Update.end();
+      Serial.println("Update Aborted");
     }
   });
+
+  server.onNotFound([]() {
+    server.send(404, "text/plain", "Not Found");
+  });
+
   server.enableCORS(true);
   server.begin();
   } //end setup
@@ -280,8 +308,8 @@ void loop() {
       }
       else if (value == sw1_code){
          switch_1_off_remote();
-        delay(200);
-        switch_2_off_remote();
+        // delay(200);
+        // switch_2_off_remote();
         isPowerOn=false;
       }
       else if(value == btn1_code){
@@ -347,7 +375,7 @@ if (auto_start){
   }
 }
 
-if(!digitalRead(sw2)){
+if(!digitalRead(sw1)){
     if (millis()  >= 21600000) { // 6 hours  21600000
       delay(100);
       if(!digitalRead(sensor_pin)){
@@ -355,7 +383,7 @@ if(!digitalRead(sw2)){
     }}}
   if(!digitalRead(sensor_pin)){
       if(auto_start ){
-        if (!TimerState && digitalRead(sw2))  //start the timer
+        if (!TimerState && digitalRead(sw1))  //start the timer
           Timer=true;
         else
           Timer=false;
@@ -385,6 +413,7 @@ if(!digitalRead(sw2)){
 //   }
 // }
 
+
   }//end loop
 
 
@@ -403,7 +432,7 @@ if(!digitalRead(sw2)){
               }
     void switch_1_off() {
           digitalWrite(sw1,LOW);
-          digitalWrite(sw2,LOW);
+          //digitalWrite(sw2,LOW);
           digitalWrite(btn3,LOW);
           Timer=false;
           counter=tempCounter;
@@ -412,36 +441,18 @@ if(!digitalRead(sw2)){
             }
     void switch_1_off_remote() {
           digitalWrite(sw1,LOW);
-          digitalWrite(sw2,LOW);
+          //digitalWrite(sw2,LOW);
           digitalWrite(btn3,LOW);
           Timer=false;
           counter=tempCounter;
           numOfTries=-1; //termenate the tries becaues the user stoped the motor
-            }
-    void switch_2_on() {
-          digitalWrite(sw2,HIGH);
-          server.send(200, "text/plain","DONE");
-            }
-                      
-    void switch_2_off() {
-          digitalWrite(sw2,LOW);
-          digitalWrite(btn3,LOW);
-          server.send(200, "text/plain","DONE");
           }
-
-    void switch_2_on_remote() {
-          digitalWrite(sw2,HIGH);
-          }
-                      
-    void switch_2_off_remote() {
-          digitalWrite(sw2,LOW);
-          digitalWrite(btn3,LOW);
-          }
+   
     void RunTheCar() {
           if(!digitalRead(sensor_pin)){
             if(!digitalRead(sw1)){
               digitalWrite(sw1,HIGH);
-              digitalWrite(sw2,HIGH);
+              //digitalWrite(sw2,HIGH);
             }
             digitalWrite(btn3,HIGH);
             run_flag=1;
@@ -452,12 +463,12 @@ if(!digitalRead(sw2)){
           }
    }
     void RunTheCarRemote() {
-        if(digitalRead(sw1)==LOW || digitalRead(sw2)==LOW){
+        if(digitalRead(sw1)==LOW){
               digitalWrite(sw1,HIGH);
               digitalWrite(light_pin,HIGH);
-              delay(200);
-              digitalWrite(sw2,HIGH);
-              delay(200);
+              // delay(200);
+              // digitalWrite(sw2,HIGH);
+              delay(400);
               digitalWrite(light_pin,LOW);
             }
             
@@ -469,12 +480,12 @@ if(!digitalRead(sw2)){
         numOfTries=0;
    }
     void RunTheCarAgain() {
-        if(digitalRead(sw1)==LOW || digitalRead(sw2)==LOW){
+        if(digitalRead(sw1)==LOW){
               digitalWrite(sw1,HIGH);
               digitalWrite(light_pin,HIGH);
-              delay(200);
-              digitalWrite(sw2,HIGH);
-              delay(200);
+              // delay(200);
+              // digitalWrite(sw2,HIGH);
+              delay(400);
               digitalWrite(light_pin,LOW);
             }
             
@@ -663,11 +674,6 @@ if(!digitalRead(sw2)){
       jamState=true;
       digitalWrite(box_pin,HIGH);
       jamPrevMillis=millis();
-      // digitalWrite(box_pin,HIGH);
-      // digitalWrite(light_pin,HIGH);
-      // delay(500);
-      // digitalWrite(box_pin,LOW);
-      // digitalWrite(light_pin,LOW);
 }
  void close_car() {
       jamState=true;
@@ -852,7 +858,6 @@ void authPower() {
       if (value != 0) {
         // Save the key code in EEPROM memory
         writeStringToEEPROM(String(value),SW1_ADD);
-        
         EEPROM.write(SW1_F, 1);
         EEPROM.commit();
         
@@ -862,7 +867,7 @@ void authPower() {
       
       mySwitch.resetAvailable();
     }
-    delay(1000);
+    delay(20);
     count++;
     if(count >= 350)
         break;
@@ -876,9 +881,7 @@ void authRun() {
       value = mySwitch.getReceivedValue();
 
       if (value != 0) {
-        // Save the key code in EEPROM memory
         writeStringToEEPROM(String(value),BTN1_ADD);
-        
         EEPROM.write(BTN1_F, 1);
         EEPROM.commit();
         
@@ -888,12 +891,12 @@ void authRun() {
       
       mySwitch.resetAvailable();
     }
-    delay(2000);
+    delay(20);
     count++;
     if(count >= 350)
         break;
   } //end while
-  //delay(1000);
+  delay(1000);
 }  //end authRun
 
    void codesData(){
@@ -905,12 +908,9 @@ void authRun() {
       server.send(200, "text/plain",st1+"#"+st2+"#"+st3+"#"+st4+"#"+st5);
   }
 
-
-
-
       void handleState() {
         String st1=(digitalRead(sw1))? "on":"off";
-        String st2=(digitalRead(sw2))? "on":"off";
+        String st2="";//(digitalRead(sw2))? "on":"off";
         String st3=(digitalRead(btn3))? "on":"off";
         String sens=(digitalRead(sensor_pin))? "on":"off";
         String countVal= TimerState? "":String(counter);
@@ -1066,26 +1066,31 @@ void formatAll() {
     sw1_code=0;
     EEPROM.write(SW1_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased");
   }
   void resetRun(){
     btn1_code=0;
     EEPROM.write(BTN1_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased");
   }
   void resetOpen(){
     open_code=0;
     EEPROM.write(OPEN_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased");
   }
   void resetLock(){
     lock_code=0;
     EEPROM.write(LOCK_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased");
   }
   void resetBox(){
     box_code=0;
     EEPROM.write(BOX_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased");
   }
   void resetAll(){
     sw1_code=0;
@@ -1103,10 +1108,5 @@ void formatAll() {
     box_code=0;
     EEPROM.write(BOX_F, 0);
     EEPROM.commit();
+    server.send(200, "text/plain", "erased all of them");
   }
-
-
-
-
-
-

@@ -1,5 +1,10 @@
-String timer=R"(
-  <!DOCTYPE html>
+#ifndef Timer_H
+#define Timer_H
+
+#include <pgmspace.h>
+
+const char timer[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
 <html lang='en'>
 <head>
     <meta charset='UTF-8' name='viewport' content='width=device-width, initial-scale=1.0'>
@@ -7,12 +12,12 @@ String timer=R"(
     <style>
         
   /*tap bar */
-  html {
-box-sizing: border-box;
---bgColorMenu : #333342;
---bgColorMain:#1f1f23;
---duration: .7s;    
---fontColor:#fff;
+html {
+  box-sizing: border-box;
+  --bgColorMenu : #333342;
+  --bgColorMain:#1f1f23;
+  --duration: .7s;    
+  --fontColor:#fff;
 }
 
 body{
@@ -113,37 +118,30 @@ input[type='number']{
   background-color: #01fff4;
 }
 .icon{
-width: 35px;
-height: 35px;
-stroke: white;
-fill: transparent;
-stroke-width: 1pt;
-stroke-miterlimit: 10;
-stroke-linecap: round;
-stroke-linejoin: round;
-stroke-dasharray: 400;
-
+  width: 35px;
+  height: 35px;
+  stroke: white;
+  fill: transparent;
+  stroke-width: 1pt;
+  stroke-miterlimit: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
 }
 
 .menu__item.active .icon {
-
-animation: strok 1.5s reverse;
-stroke: #01fff4;
-color:#01fff4;
+  animation: strok 1.5s reverse;
+  stroke: #01fff4;
+  color:#01fff4;
 }
 .menu__item.active{
-
-color:#01fff4;
+  color:#01fff4;
 }
 
 @keyframes strok {
-
-100% {
-
-    stroke-dashoffset: 400;
-
-}
-
+  100% {
+      stroke-dashoffset: 400;
+  }
 }
 
 
@@ -261,7 +259,7 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 
     </style>
 </head>
-<body>
+<body onload='onload()'>
     <h2 id='title'>
         فصل الجهاز بعد مدة
     </h2>
@@ -279,7 +277,6 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
     <div class='item'>دقائق</div>
 </div>
     <div class='row' id='msg'>
-      لايوجد اتصال
     </div>
     <button id='save' onclick='setTimer()'>
         حفظ
@@ -307,14 +304,17 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 
       </menu>
 
-      <script>
-        const goSettings=()=>{
-            window.open('settings.html', '_self');
-            }
+<script>
+  const setMsg=(m)=>{
+    document.getElementById('msg').innerHTML=m;
+  }
+  const goSettings=()=>{
+      window.open('settings', '_self');
+      }
 
-        const goHome=()=>{
-            window.open('index.html', '_self');
-            }
+  const goHome=()=>{
+      window.open('index', '_self');
+      }
     const switch1=document.getElementById('sw1'); //global
 const changeState=()=>{
   document.getElementById('msg').innerHTML='';
@@ -325,7 +325,32 @@ const changeState=()=>{
     document.getElementsByClassName('row2')[0].style.display='none';
   }
 }
-
+function onload(){
+  new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    const url = 'http://2.2.2.2/timerState';
+                    xhr.onreadystatechange = () => {
+                      if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                          if(xhr.responseText.split("#")[1]=="on"){
+                            document.getElementById('sw1').checked=true;
+                            document.getElementById('timeV').value=parseInt(xhr.responseText.split("#")[0])/60;
+                            document.getElementsByClassName('row2')[0].style.display='flex';
+                          }
+                          else{
+                            document.getElementById('sw1').checked=false;
+                            document.getElementsByClassName('row2')[0].style.display='none';
+                          }
+                        } else {
+                          setMsg("هناك خطأ ما !");
+                        }
+                      }
+                    };
+                    xhr.open('GET', url, true);
+                    xhr.timeout = 1000; 
+                    xhr.send();
+                  });
+}
 const setTimer= ()=>{
     const timeValue=document.getElementById('timeV').value;
     try {
@@ -339,7 +364,7 @@ const setTimer= ()=>{
         if(switch1.checked){
         new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          const url = 'http://192.168.4.1/setTimer?value='+timeValue*60+'&state=on';
+          const url = 'http://2.2.2.2/setTimer?value='+timeValue*60+'&state=on';
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 200) {
@@ -362,7 +387,7 @@ const setTimer= ()=>{
         else{//not enabled
           new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/setTimer?value=0&state=off';
+            const url = 'http://2.2.2.2/setTimer?value=0&state=off';
             xhr.onreadystatechange = () => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -390,4 +415,6 @@ const setTimer= ()=>{
       </script>
 </footer>
 </html>
-)";
+)rawliteral";
+
+#endif // Timer_H

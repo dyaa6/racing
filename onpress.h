@@ -1,18 +1,23 @@
-String onpress= R"(
+#ifndef Press_H
+#define Press_H
+
+#include <pgmspace.h>
+
+const char onpress[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-    <meta charset='UTF-8' name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Settings</title>
-    <style>
+  <meta charset='UTF-8' name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>تشغيل بضغطة واحدة</title>
+  <style>
         
   /*tap bar */
-  html {
-box-sizing: border-box;
---bgColorMenu : #333342;
---bgColorMain:#1f1f23;
---duration: .7s;    
---fontColor:#fff;
+html {
+  box-sizing: border-box;
+  --bgColorMenu : #333342;
+  --bgColorMain:#1f1f23;
+  --duration: .7s;    
+  --fontColor:#fff;
 }
 
 body{
@@ -53,6 +58,7 @@ body{
     padding-inline-end: 40px;
     justify-content: space-between;
     width: 60%;
+    display:none;
 }
 
 #msg{
@@ -60,39 +66,36 @@ body{
   margin:10px;
 }
 .menu{
-
-margin: 0;
-padding: 0px;
-display: flex;
-width: 100%;
-font-size: 15px;
-position: fixed;
-bottom: 0px;
-left: 0px;
-align-items: center;
-justify-content: space-around;
-background-color: var(--bgColorMenu);
-height: 60px;
-
+  margin: 0;
+  padding: 0px;
+  display: flex;
+  width: 100%;
+  font-size: 15px;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  align-items: center;
+  justify-content: space-around;
+  background-color: var(--bgColorMenu);
+  height: 60px;
 }
 
 .menu__item{
-
-all: unset;
-flex-grow: 1;
-z-index: 100;
-display: flex;
-cursor: pointer;
-position: relative;
-border-radius: 50%;
-align-items: center;
-will-change: transform;
-justify-content: center;
-padding: 0.55em 0 0.85em;
-transition: transform var(--timeOut , var(--duration));
-flex-direction: column;
-color:#fff;
-line-height: 1em;
+  all: unset;
+  flex-grow: 1;
+  z-index: 100;
+  display: flex;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+  align-items: center;
+  will-change: transform;
+  justify-content: center;
+  padding: 0.55em 0 0.85em;
+  transition: transform var(--timeOut , var(--duration));
+  flex-direction: column;
+  color:#fff;
+  line-height: 1em;
 }
 input[type='number']{
     width: 70px !important;
@@ -116,38 +119,30 @@ input[type='number']{
   background-color: #01fff4;
 }
 .icon{
-
-width: 35px;
-height: 50;
-stroke: white;
-fill: transparent;
-stroke-width: 1pt;
-stroke-miterlimit: 10;
-stroke-linecap: round;
-stroke-linejoin: round;
-stroke-dasharray: 400;
-
+  width: 35px;
+  height: 50;
+  stroke: white;
+  fill: transparent;
+  stroke-width: 1pt;
+  stroke-miterlimit: 10;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 400;
 }
 
 .menu__item.active .icon {
-
-animation: strok 1.5s reverse;
-stroke: #01fff4;
-color:#01fff4;
+  animation: strok 1.5s reverse;
+  stroke: #01fff4;
+  color:#01fff4;
 }
 .menu__item.active{
-
-color:#01fff4;
+  color:#01fff4;
 }
 
 @keyframes strok {
-
-100% {
-
-    stroke-dashoffset: 400;
-
-}
-
+  100% {
+      stroke-dashoffset: 400;
+  }
 }
 
 
@@ -265,7 +260,7 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 
     </style>
 </head>
-<body>
+<body onload='onload()'>
     <h2 id='title'>
         تشغيل بضغطة واحدة
     </h2>
@@ -273,7 +268,7 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 <div class='row row1'>
         تشغيل السيارة بضغطة واحدة
     <div>
-        <label><input type='checkbox' id='sw1' class='ios-switch green  bigswitch' onchange='changeState()' checked /><div><div></div></div></label>
+        <label><input type='checkbox' id='sw1' class='ios-switch green  bigswitch' onchange='changeState()' /><div><div></div></div></label>
     </div>
 </div>
 
@@ -281,12 +276,12 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
     <div class='item'>
       عدد محاولات التشغيل
     </div>
-    <div class='item'><input type='number' value='5' id='tryValue'/></div>
+    <div class='item'><input type='number' value='3' id='tryValue'/></div>
 </div>
     <div class='row' id='msg'>
       
     </div>
-    <button id='save' onclick='setTimer()'>
+    <button id='save' onclick='setNumOfTries()'>
         حفظ
     </button>
 </div>
@@ -314,16 +309,46 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
 
 <script>
         const goSettings=()=>{
-            window.open('settings.html', '_self');
+            window.open('settings', '_self');
             }
 
         const goHome=()=>{
-            window.open('index.html', '_self');
+            window.open('index', '_self');
             }
-
+        const setMsg=(m,color)=>{
+          element=document.getElementById('msg')
+          element.innerHTML=m;
+          if(color) element.style.color='green';
+          else element.style.color='red';
+        }
+function onload(){
+  new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const url = 'http://2.2.2.2/autoState';
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === 4) {
+          if (xhr.status === 200) {
+            if(xhr.responseText.split('#')[0]=='on'){
+              document.getElementById('sw1').checked=true;
+              document.getElementById('tryValue').value=parseInt(xhr.responseText.split('#')[1]);
+              document.getElementsByClassName('row2')[0].style.display='flex';
+            }
+            else{
+              document.getElementById('sw1').checked=false;
+            }
+          } else {
+            setMsg('هناك خطأ ما !',false);
+          }
+        }
+      };
+      xhr.open('GET', url, true);
+      xhr.timeout = 1000; // set the timeout to 2 seconds
+      xhr.send();
+    });
+}
     setInterval(()=>{
       let text=document.getElementById('tryValue').value;
-      let numericValue = text.replace(/[^0-9]/g, ''); 
+      let numericValue = text.replace(/[^0-9]/g, '');
       let limitedValue = numericValue.slice(0, 3);
       document.getElementById('tryValue').value=limitedValue;
     },100);
@@ -338,37 +363,35 @@ input[type='checkbox'].green.ios-switch:checked + div > div {
         }
       }
 
-const setTimer= ()=>{
-    const tryValue=document.getElementById('tryValue').value;
-    try {
-      //setResponseText(response);
-      if ((tryValuealue == '' || tryValuealue == 0)&& switch1.checked) {
-        document.getElementById('msg').innerHTML=('يجب أن تدخل قيمة');
-        document.getElementById('msg').style.color='orange';
-        return;
-      }
-      else{
+const setNumOfTries= ()=>{
+  const tryValue=document.getElementById('tryValue').value;
+  try {
+    //setResponseText(response);
+    if ((tryValue == '' || tryValue == 0)&& switch1.checked) {
+      document.getElementById('msg').innerHTML=('يجب أن تدخل قيمة');
+      document.getElementById('msg').style.color='orange';
+      return;
+    }
+    else{
           if(switch1.checked){
         new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          const url = 'http://192.168.4.1/setAuto?numOfTries='+tryValue+'&state=on';
+          const url = 'http://2.2.2.2/setAuto?numOfTries='+tryValue+'&state=on';
           xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
               if (xhr.status === 200) {
                   if(xhr.responseText=='auto mode'){
-                      setMsg('تم حفظ التغييرات');
-                      setsucsess(true);
-                      setIsLoading(false);
+                      setMsg('تم حفظ التغييرات',true);
+                      document.getElementById('msg').style.color='green';
                   }
               } else {
-                setMsg('هناك خطأ ما !');
-                setsucsess(false);
-                setIsLoading(false);
+                setMsg('هناك خطأ ما !',false);
+
               }
             }
           };
           xhr.open('GET', url, true);
-          xhr.timeout = 2000; // set the timeout to 2 seconds
+          xhr.timeout = 1000; // set the timeout to 2 seconds
           xhr.send();
         });
         
@@ -376,24 +399,22 @@ const setTimer= ()=>{
         else{//not enabled
           new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/setAuto?numOfTries=0&state=off';
+            const url = 'http://2.2.2.2/setAuto?numOfTries=0&state=off';
             xhr.onreadystatechange = () => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
                     if(xhr.responseText=='manual mode'){
-                        setMsg('تم حفظ التغييرات');
-                        setsucsess(true);
-                        setIsLoading(false);
+                        setMsg('تم حفظ التغييرات',true);
+
                     }
                 } else {
-                  setMsg('هناك خطأ ما !');
-                  setsucsess(false);
-                  setIsLoading(false);
+                  setMsg('هناك خطأ ما !',false);
+
                 }
               }
             };
             xhr.open('GET', url, true);
-            xhr.timeout = 2000; // set the timeout to 2 seconds
+            xhr.timeout = 1000; // set the timeout to 2 seconds
             xhr.send();
           });
         }
@@ -406,4 +427,7 @@ const setTimer= ()=>{
       </script>
 </footer>
 </html>
-)";
+
+)rawliteral";
+
+#endif // Press_H

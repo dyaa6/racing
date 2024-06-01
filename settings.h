@@ -1,4 +1,9 @@
-String settings=R"(
+#ifndef Set_H
+#define Set_H
+
+#include <pgmspace.h>
+
+const char settings[] PROGMEM = R"rawliteral(
   <!DOCTYPE html>
 <html lang='en'>
 <head>
@@ -178,7 +183,7 @@ body{
                 </svg>
         </div>
         <div class='item' onclick='goUpdate()'>
-            تحديث نضام الجهاز
+            تحديث نظام الجهاز
             <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='50' height='50' viewBox='0 0 50 50'>
                 <image width='46' height='50' xlink:href='data:img/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC4AAAAyCAYAAAAjrenXAAACbklEQVRoge2av04cMRDGvzmuoMwjQJE2XB0liKt4nHsDCE8S5REoUl8K0lDRUR6iRuJ6Al/ki+/fyt71jO1dIeWTViet7fFv52zveNZCEpUlAEa+izcARTosBi4iqvq5/ZrBU0BJfgRwDuAQwE8RuY/U0wO4RqmX0u4JySeSb/ynZ5KfSrElQWtFcuJBm3L3JmqDgQeJglqHUAv0WlnwwafI8XIidDn4AaDLwFce007f/VUWPhe8C3qnXln4PqCrwFvBtdDF4S3gVuii8FrwXOhi8BrwUtBF4IeCzoZPAa8FnQU/NLQZnmQ0sO4L2gRPchQx0iu0Gj7k8aGgNfCrrdvuNswXzAF8iNj9FbopIlMj5DxSdBa5vwRwGgJfADjSAoh2t7ztzxJH34XATQF5z+BPoYl5ZwHoWY8hj7thctkxXCbNOVDQ48sO5z0AuLDueObN6a42srXVVGyy7im4hr8H/QfvW+NS/ZH81if72HeqzrYGdFmBLyrrULmuyJRke5Nm1nicpFvDFy3xjFVuDT8WkWVX+43HNUuxNzyNBVxGOVvTFGg0E/vWcU4yFsklSUTUDtgb48a3aBa02UZmJmsRCfgtWmRlshKTQkfKlHKqnn2Q1ynrcjirsKLA25ylVLSC538KybRd7JUP4MrYzvbGNY7xwePxkkFW9W/ru4olg7raPVRkSrJtnZw/jO1SlBbAWb9ztmSbcpSUJVuF4THIxEMGXwB8BfDZH+9wxzpeAbz4Kgd+Ho12jnu43z++jvjyWwC/ReSmC3jDlwNeW23/vPXYx/rwzPpyRpyn3W/IoKvvrlj5uk5b+VYA/gIm4iEK/V/SzAAAAABJRU5ErkJggg=='/>
               </svg>
@@ -206,27 +211,29 @@ body{
       </menu>
    <script>
         const goSettings=()=>{
-            window.open('settings.html', '_self');
+            window.open('settings', '_self');
             }
         const goNetwork=()=>{
-            window.open('network.html', '_self');
+            window.open('network', '_self');
             }
         const goHome=()=>{
             window.open('/', '_self');
             }
         const goRemote=()=>{
-            window.open('remote.html', '_self');
+            window.open('remote', '_self');
             }
         const goUpdate=()=>{
-            window.open('update.html', '_self');
+            window.open('update', '_self');
             }
         const goTimer=()=>{
-            window.open('timer.html', '_self');
+            window.open('timer', '_self');
             }
         const goOnePress=()=>{
-            window.open('onepress.html', '_self');
+            window.open('onepress', '_self');
             }
       </script>
 </footer>
 </html>
-)";
+)rawliteral";
+
+#endif // Set_H

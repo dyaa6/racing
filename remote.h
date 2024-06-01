@@ -1,5 +1,10 @@
-String remote= R"(
-  <!DOCTYPE html>
+#ifndef Remote_H
+#define Remote_H
+
+#include <pgmspace.h>
+
+const char remote[] PROGMEM = R"rawliteral(
+<!DOCTYPE html>
 <html lang='ar'>
 <head>
     <meta charset='UTF-8'>
@@ -171,7 +176,7 @@ color:#01fff4;
         لايوجد اتصال
     </div>
     <div class='item-container'>
-        <div class='item' id='powerOff' onclick='auth(`authPower`)'>
+        <div class='item' id='authPower' onclick='auth(`authPower`)'>
             <div class='row'>
              إطفاء
              <svg width='45px' height='45px' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' stroke='#ffffff'>
@@ -186,13 +191,13 @@ color:#01fff4;
                 </div>
             </div>
               <div class='row'>
-                <button class='btn' onclick='reset(`resetPowerwdx`); event.stopPropagation();'>تصفير</button>
+                <button class='btn' onclick='reset(`resetPower`); event.stopPropagation();'>تصفير</button>
                 <div id='offCode' class='label'>
-                  0
+                0
                 </div>
               </div>
         </div>
-        <div class='item' id='powerOn' onclick='goNetwork()'>
+        <div class='item' id='authRun' onclick='auth(`authRun`)'>
             <div class='row'>
              تشغيل
              <svg fill='#ffffff' height='45px' width='45px' version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 511.998 511.998' xml:space='preserve' stroke='#ffffff'>
@@ -202,18 +207,18 @@ color:#01fff4;
             </svg>
             </div>
             <div class='row'>
-                <div id='offWait' class='label'>
+                <div id='runWait' class='label'>
                     انقر لإضافة زر جديد
                 </div>
             </div>
               <div class='row'>
-                <button class='btn' onclick='reset(`resetRunwdx`); event.stopPropagation();'>تصفير</button>
+                <button class='btn' onclick='reset(`resetRun`); event.stopPropagation();'>تصفير</button>
                 <div id='runCode' class='label'>
                 0
                 </div>
               </div>
         </div>
-        <div class='item' id='lock' onclick='goNetwork()'>
+        <div class='item' id='authLock' onclick='auth(`authLock`)'>
             <div class='row'>
              قفل
              <svg fill='#fff' width='37px' height='37px' viewBox='-13.39 0 122.88 122.88' version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' enable-background='new 0 0 96.108 122.88' xml:space='preserve' stroke='#fff'>
@@ -223,18 +228,18 @@ color:#01fff4;
             </svg>
             </div>
             <div class='row'>
-                <div id='offWait' class='label'>
+                <div id='lockWait' class='label'>
                     انقر لإضافة زر جديد
                 </div>
             </div>
               <div class='row'>
-                <button class='btn' onclick='reset(`resetLockwdx`); event.stopPropagation();'>تصفير</button>
+                <button class='btn' onclick='reset(`resetLock`); event.stopPropagation();'>تصفير</button>
                 <div id='lockCode' class='label'>
                 0
                 </div>
               </div>
         </div>
-        <div class='item' id='open' onclick='goNetwork()'>
+        <div class='item' id='authOpen' onclick='auth(`authOpen`)'>
             <div class='row'>
              فتح
              <svg fill='#fff' width='37px' height='37px' viewBox='0 -6.61 122.88 122.88' version='1.1' id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' enable-background='new 0 0 122.88 109.652' xml:space='preserve' stroke='#fff'>
@@ -244,18 +249,18 @@ color:#01fff4;
             </svg>
             </div>
             <div class='row'>
-                <div id='offWait' class='label'>
+                <div id='openWait' class='label'>
                     انقر لإضافة زر جديد
                 </div>
             </div>
               <div class='row'>
-                <button class='btn' onclick='reset(`resetOpenwdx`); event.stopPropagation();'>تصفير</button>
+                <button class='btn' onclick='reset(`resetOpen`); event.stopPropagation();'>تصفير</button>
                 <div id='openCode' class='label'>
                 0
                 </div>
               </div>
         </div>
-        <div class='item' id='trunk' onclick='goNetwork()' style='margin-bottom: 70px;'>
+        <div class='item' id='authBox' onclick='auth(`authBox`)' style='margin-bottom: 70px; display:none;'>
             <div class='row'>
              صندوق
              <svg fill='#ffffff' height='45px' width='45px' version='1.1' id='Capa_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' viewBox='0 0 302.93 302.93' xml:space='preserve' stroke='#ffffff'>
@@ -265,17 +270,17 @@ color:#01fff4;
             </svg>
             </div>
             <div class='row'>
-                <div id='offWait' class='label'>
+                <div id='boxWait' class='label'>
                     انقر لإضافة زر جديد
                 </div>
             </div>
               <div class='row'>
-                <button class='btn' onclick='reset(`resetBoxwdx`); event.stopPropagation();'>تصفير</button>
+                <button class='btn' onclick='reset(`resetBox`); event.stopPropagation();'>تصفير</button>
                 <div id='trunkCode' class='label'>
                 0
                 </div>
               </div>
-        </div>
+        </div><br><br><br>
     
 
 </div>
@@ -300,13 +305,13 @@ color:#01fff4;
 
       <script>
         const goSettings=()=>{
-            window.open('settings.html', '_self');
+            window.open('settings', '_self');
             }
         const goNetwork=()=>{
-            window.open('network.html', '_self');
+            window.open('network', '_self');
             }
         const goHome=()=>{
-            window.open('index.html', '_self');
+            window.open('index', '_self');
             }
 
         const setWaitingState=(element,state)=>{
@@ -321,7 +326,7 @@ color:#01fff4;
   const reset=(button)=>{
     new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/'+button;
+        const url = 'http://2.2.2.2/'+button;
         xhr.onreadystatechange = () => {
             if (xhr.readyState === 4) {
             if (xhr.status === 200) {
@@ -339,7 +344,7 @@ color:#01fff4;
   const updateKeys=()=>{
     new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/remoteCodes';
+        const url = 'http://2.2.2.2/remoteCodes';
     
         xhr.onreadystatechange = async() => {
           if (xhr.readyState === 4) {
@@ -347,15 +352,10 @@ color:#01fff4;
               resolve(xhr.responseText);
               document.getElementById('isconnected').style.display = 'none';
               document.getElementById('offCode').innerText=xhr.responseText.split('#')[0];
-              //setPowerCode(xhr.responseText.split('#')[0]);
               document.getElementById('runCode').innerText=xhr.responseText.split('#')[1];
-              //setRunCode(xhr.responseText.split('#')[1]);
               document.getElementById('openCode').innerText=xhr.responseText.split('#')[2];
-              //setOpenCode(xhr.responseText.split('#')[2]);
               document.getElementById('lockCode').innerText=xhr.responseText.split('#')[3];
-              //setLockcode(xhr.responseText.split('#')[3]);
               document.getElementById('trunkCode').innerText=xhr.responseText.split('#')[4];
-              //setBoxCode(xhr.responseText.split('#')[4]);
             } else {
                 document.getElementById('isconnected').style.display = 'block';
               reject('error');
@@ -375,52 +375,69 @@ color:#01fff4;
         const auth=(name)=>{
             setWaitingState(name,true);
             switch(name){
-                case 'powerOff':
-                    document.getElementById('offWait').innerHTML='جار انتضار الضغط على الزر';
+                case 'authPower':
+                    document.getElementById('offWait').innerHTML='جار انتضار الضغط على الزر..';
+                    break;
+                case 'authRun':
+                    document.getElementById('runWait').innerHTML='جار انتضار الضغط على الزر..';
+                    break;
+                case 'authLock':
+                    document.getElementById('lockWait').innerHTML='جار انتضار الضغط على الزر..';
+                    break;
+                case 'authOpen':
+                    document.getElementById('openWait').innerHTML='جار انتضار الضغط على الزر..';
+                    break;
+                case 'authBox':
+                    document.getElementById('boxWait').innerHTML='جار انتضار الضغط على الزر..';
+                    break;
+
             }
             try {
-                fetch('http://192.168.4.1/' + name, {
-                    timeout: 500 // Set the timeout to 500ms
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                        updateKeys();
-                        setWaitingState('powerOn', false);
-                        setWaitingState('powerOff', false);
-                        document.getElementById('offWait').innerHTML = 'انقر لإضافة زر جديد';
-                        setWaitingState('lock', false);
-                        setWaitingState('open', false);
-                        setWaitingState('trunk', false);
-                        document.getElementById('isconnected').style.display = 'none';
-                        } else {
-                        setWaitingState('powerOff', false);
-                        document.getElementById('offWait').innerHTML = 'انقر لإضافة زر جديد';
-                        setWaitingState('powerOn', false);
-                        setWaitingState('lock', false);
-                        setWaitingState('open', false);
-                        setWaitingState('trunk', false);
-                        document.getElementById('isconnected').style.display = 'block';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        setWaitingState('powerOff', false);
-                        document.getElementById('offWait').innerHTML = 'انقر لإضافة زر جديد';
-                        setWaitingState('powerOn', false);
-                        setWaitingState('lock', false);
-                        setWaitingState('open', false);
-                        setWaitingState('trunk', false);
-                        document.getElementById('isconnected').style.display = 'block';
-                    });
-
+                new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            const url = 'http://2.2.2.2/'+name;
+                            xhr.onreadystatechange = () => {
+                              if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+                                    updateKeys();
+                                    setWaitingState('authPower', false);
+                                    setWaitingState('authRun', false);
+                                    setWaitingState('authLock', false);
+                                    setWaitingState('authOpen', false);
+                                    setWaitingState('authBox', false);
+                                    document.getElementById('offWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('runWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('lockWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('openWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('boxWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('isconnected').style.display = 'none';
+                                } else {
+                                    setWaitingState('authPower', false);
+                                    setWaitingState('authRun', false);
+                                    setWaitingState('authLock', false);
+                                    setWaitingState('authOpen', false);
+                                    setWaitingState('authBox', false);
+                                    document.getElementById('offWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('runWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('lockWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('openWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('boxWait').innerHTML = 'انقر لإضافة زر جديد';
+                                    document.getElementById('isconnected').style.display = 'block';
+                                }
+                              }
+                            };
+                            xhr.open('GET', url, true);
+                            xhr.timeout = 7000; // set the timeout to 2 seconds
+                            xhr.send();
+                          })
                 } catch (error) {
-                    // setWaitingState('powerOn', false);
-                    // setWaitingState('powerOff', false);
-                    // document.getElementById('offWait').innerHTML='انقر لإضافة زر جديد';
-                    // setWaitingState('lock', false);
-                    // setWaitingState('open', false);
-                    // setWaitingState('trunk', false);
-                    // document.getElementById('isconnected').style.display = 'block';
+                    setWaitingState('powerOn', false);
+                    setWaitingState('authPower', false);
+                    document.getElementById('offWait').innerHTML='انقر لإضافة زر جديد';
+                    setWaitingState('lock', false);
+                    setWaitingState('open', false);
+                    setWaitingState('trunk', false);
+                    document.getElementById('isconnected').style.display = 'block';
                 }
 
             
@@ -432,4 +449,6 @@ color:#01fff4;
       </script>
 </footer>
 </html>
-)";
+)rawliteral";
+
+#endif // Remote_H

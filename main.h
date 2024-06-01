@@ -1,6 +1,11 @@
-String index_html = R"(
- <!DOCTYPE html>
-<html lang='en'>
+#ifndef Index_H
+#define Index_H
+
+#include <pgmspace.h>
+
+const char index_html[] PROGMEM = R"rawliteral(
+  <!DOCTYPE html>
+<html lang='ar'>
 <head>
     <meta charset='UTF-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
@@ -19,11 +24,11 @@ String index_html = R"(
 user-select: none;
 }
 :root{
-	--button_color: #04AA6D;
+ --button_color: #04AA6D;
 }
 @font-face {
-	font-family: theme-font;
-	src: url(../fonts/font.ttf);
+  font-family: theme-font;
+  src: url(../fonts/font.ttf);
 }
 body{
     background: var(--bgColorMain);
@@ -31,10 +36,10 @@ body{
     background-position: center;
     background-repeat: repeat;
     font-family: theme-font !important;
-	font-size: large;
+  font-size: large;
     --on: #88e661;
-	--off: #f0f0f0;
-	--transDur: 0.6s;
+  --off: #f0f0f0;
+  --transDur: 0.6s;
 }
 
 #title_bar{
@@ -52,19 +57,19 @@ background: #208371;
 /*button*/
 .button1 {
     padding: 10px 25px;
-	border-radius: 15px;
+  border-radius: 15px;
     width: 40%;
     margin-top: 10px;
   }
   .button2 {
     padding: 5px 5px;
-	border-radius: 50px;
+  border-radius: 50px;
     width: 80px;
     height: 80px;
     margin-top: 20px;
   }
   .button{
-	font-size: 24px;
+  font-size: 24px;
     text-align: center;
     cursor: pointer;
     outline: none;
@@ -73,8 +78,8 @@ background: #208371;
     border: none;
     box-shadow: 0 9px rgb(15, 204, 84);
     user-select: none;
-	outline: none;
-	font-family: theme-font;
+  outline: none;
+  font-family: theme-font;
   }
   .button:active {
     background-color: #3e8e41;
@@ -84,33 +89,33 @@ background: #208371;
 
 
   #lock-container{
-	display:flex;
-	flex-direction: row;
-	align-items: baseline;
-	justify-content:center;
-	padding-bottom: 20px;
+  display:flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content:center;
+  padding-bottom: 20px;
 }
 #run-button-container{
-	display:flex;
-	flex-direction: row;
-	align-items: baseline;
-	justify-content:center;
-	padding-bottom: 20px;
+  display:flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content:center;
+  padding-bottom: 20px;
 }
 
   .card{
-	/* background: rgba(103, 180, 134, 0.507); */
-	border-radius: 10px;
-	margin: 15px;
+  /* background: rgba(103, 180, 134, 0.507); */
+  border-radius: 10px;
+  margin: 15px;
   }
   .button3{
-	  width:85px;
-	  height: 85px;
-	  border-radius: 50px;
-	  background: var(-primary);
+    width:85px;
+    height: 85px;
+    border-radius: 50px;
+    background: var(-primary);
   }
   .button3 img {
-	  width: 50px;
+    width: 50px;
   }
 
  
@@ -119,38 +124,38 @@ background: #208371;
 
 /*signs*/
 #run_sign{
-	width: 70px;
-	height: 70px;
-	background-color: rgb(60, 56, 56);
-	border: 2px solid #000;
-	border-radius: 100px;
-	margin: 6px;
-	/*box-shadow:0px 0px 30px rgb(9, 243, 64) ;*/
+  width: 70px;
+  height: 70px;
+  background-color: rgb(60, 56, 56);
+  border: 2px solid #000;
+  border-radius: 100px;
+  margin: 6px;
+  /*box-shadow:0px 0px 30px rgb(9, 243, 64) ;*/
 }
 .signs_container{
-	display: flex;
-	flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-	list-style-type: none;
+  list-style-type: none;
 }
 .sign{
-	width: 60px;
-	height: 20px;
-	background-color: #3c3838;
-	border: 1px solid #000;
+  width: 80px;
+  height: 20px;
+  background-color: #3c3838;
+  border: 1px solid #000;
 }
 #sign1{
-	border-start-start-radius: 10px;
+  border-start-start-radius: 10px;
 }
 #sign3{
-	border-end-end-radius: 10px;
+  border-end-end-radius: 10px;
 }
 
 #wrong-password{
-	display: block;
-	color: red;
-	direction: rtl;
-	text-align: right;
+  display: block;
+  color: red;
+  direction: rtl;
+  text-align: right;
 }
 
 
@@ -159,210 +164,219 @@ background: #208371;
 
 /*alert box*/
 #alertContainer{
-	width: 100%;
-	position: fixed;
-	left: 0px;
-	bottom: 10vh;
-	text-align: center;
-	display: flex;
-	justify-content: center;
+  width: 100%;
+  position: fixed;
+  left: 0px;
+  bottom: 10vh;
+  text-align: center;
+  display: flex;
+  justify-content: center;
 }
 .alertBox{
-	width: 80%;
-	height: 50px;
-	line-height: 50px;
-	background-color: #fff;
-	border:1px solid red;
-	border-radius: 10px;
-	text-align: center;
-	color: red;
-	direction: rtl;
+  width: 80%;
+  height: 50px;
+  line-height: 50px;
+  background-color: #fff;
+  border:1px solid red;
+  border-radius: 10px;
+  text-align: center;
+  color: red;
+  direction: rtl;
 }
 #isconnected{
-	display: none;
+  display: none;
 }
 
 .pbutton{
-	background-color: var(--bgColorMenu);
-	padding: 15px;
-	border-radius: 15px;
-	margin: 10px;
-	color:#fff;
-	transition: all 0.4s;
-	box-shadow: 2px 2px 20px 1px rgba(219, 203, 203, 0.2);
+  background-color: var(--bgColorMenu);
+  padding: 15px;
+  border-radius: 15px;
+  margin: 15px;
+  color:#fff;
+  transition: all 0.4s;
+  box-shadow: 2px 2px 20px 1px rgba(219, 203, 203, 0.2);
+  border-radius: 80px;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .pbutton:active{
-	background-color: #4a4949;
-	transform: scale(1.07);
+  background-color: #4a4949;
+  transform: scale(1.07);
 }
 
-
+.power-btn{
+  width: 80px;
+  height: 80px;
+}
 /*switch*/
 
 
 @property --color {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: red;
+  syntax: '<color>';
+  inherits: true;
+  initial-value: red;
   }
   @property --light-on {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #0001;
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0001;
   }
   @property --light-off {
-	syntax: '<color>';
-	inherits: true;
-	initial-value: #000d;
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #000d;
   }
   
   @keyframes squeeze {
-	0%, 100% { width: 0.95em; aspect-ratio: 1;  }
-	50% { width: 1.35em; aspect-ratio: 1.75; }
+  0%, 100% { width: 0.95em; aspect-ratio: 1;  }
+  50% { width: 1.35em; aspect-ratio: 1.75; }
   }
   @keyframes squeeze2 {
-	0%, 100% { width: 0.95em; aspect-ratio: 1;  }
-	50% { width: 1.35em; aspect-ratio: 1.75; }
+  0%, 100% { width: 0.95em; aspect-ratio: 1;  }
+  50% { width: 1.35em; aspect-ratio: 1.75; }
   }
   
   .ellastic {
-	--on: #af5;
-	--off: #d55;
-	--duration: 0.3s;
-	--color: var(--off);
-	--color-semi: color-mix(in srgb, var(--color) 50%, #0000);
-	--color-semi2: color-mix(in srgb, var(--color) 33%, #0000);
-	--color-semi3: color-mix(in srgb, var(--color) 15%, #fff0);
-	--light-on: #0001;
-	--light-off: #000d;
-	appearance: none;
-	font-size: 3em;
-	width: 2.5em;
-	aspect-ratio: 2.5;
-	border-radius: 3em; /*change the button size from here*/
-	margin:10px;
-	border: 1px solid #0000;
-	position: relative;
-	color: var(--color);
-	filter: 
-	  drop-shadow(0 0.025em 0.0125em #fff3)
-	  drop-shadow(0 -0.025em 0.0125em #000c)
-	  ;
-	transition: 
-	  --color var(--duration) linear,
-	  --light-on calc(var(--duration) / 2),
-	  --light-off calc(var(--duration) / 2),
-	  color var(--duration) linear;
-	atransition-delay: 0s, calc(var(--duration) / 1), 0s, 0s;
+  --on: #af5;
+  --off: #d55;
+  --duration: 0.3s;
+  --color: var(--off);
+  --color-semi: color-mix(in srgb, var(--color) 50%, #0000);
+  --color-semi2: color-mix(in srgb, var(--color) 33%, #0000);
+  --color-semi3: color-mix(in srgb, var(--color) 15%, #fff0);
+  --light-on: #0001;
+  --light-off: #000d;
+  appearance: none;
+  font-size: 3em;
+  width: 2.5em;
+  aspect-ratio: 2.5;
+  border-radius: 3em; /*change the button size from here*/
+  margin:10px;
+  border: 1px solid #0000;
+  position: relative;
+  color: var(--color);
+  filter: 
+    drop-shadow(0 0.025em 0.0125em #fff3)
+    drop-shadow(0 -0.025em 0.0125em #000c)
+    ;
+  transition: 
+    --color var(--duration) linear,
+    --light-on calc(var(--duration) / 2),
+    --light-off calc(var(--duration) / 2),
+    color var(--duration) linear;
+  atransition-delay: 0s, calc(var(--duration) / 1), 0s, 0s;
   
-	&::after {
-	  content: '';
-	  position: absolute;
-	  top: 50%;
-	  left: 0.5em;
-	  transform: translate(-50%, -50%);
-	  width: 0.95em;
-	  aspect-ratio: 1;
-	  border-radius: 5em;
-	  border: 1px solid #0000;
-	  background: 
-		radial-gradient(at 50% 0, var(--color-semi), #0000 40%),
-		radial-gradient(at 50% 100%, var(--color-semi), #0000 40%),
-		radial-gradient(50% 50% at 50% 0, #fff2, #0000 90%),
-		radial-gradient(50% 50% at 50% 110%, #0007, #0000 90%),
-		radial-gradient(circle, #0000 0.12em, var(--color-semi3) 0.125em, #0000 0.5em),
-		radial-gradient(circle, #0000 0.12em, var(--color-semi2) 0.125em, #0000 0.4em),
-		radial-gradient(circle, #0000 0.12em, #fff1 0.125em, #fff0 0.25em),
-		radial-gradient(circle, #0000 0.12em, #2f2f33 0.125em);
-	  ;
-	  background-repeat: no-repeat;
-	  box-shadow: 
-		inset 0 0 0.125em var(--color-semi),
-		0 0 0.2em #0005,
-		0 0.15em 0.1em #0008;
-	  transition: left var(--duration) linear;
-	  animation: squeeze var(--duration) 1 linear forwards;
-	}
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0.5em;
+    transform: translate(-50%, -50%);
+    width: 0.95em;
+    aspect-ratio: 1;
+    border-radius: 5em;
+    border: 1px solid #0000;
+    background: 
+    radial-gradient(at 50% 0, var(--color-semi), #0000 40%),
+    radial-gradient(at 50% 100%, var(--color-semi), #0000 40%),
+    radial-gradient(50% 50% at 50% 0, #fff2, #0000 90%),
+    radial-gradient(50% 50% at 50% 110%, #0007, #0000 90%),
+    radial-gradient(circle, #0000 0.12em, var(--color-semi3) 0.125em, #0000 0.5em),
+    radial-gradient(circle, #0000 0.12em, var(--color-semi2) 0.125em, #0000 0.4em),
+    radial-gradient(circle, #0000 0.12em, #fff1 0.125em, #fff0 0.25em),
+    radial-gradient(circle, #0000 0.12em, #2f2f33 0.125em);
+    ;
+    background-repeat: no-repeat;
+    box-shadow: 
+    inset 0 0 0.125em var(--color-semi),
+    0 0 0.2em #0005,
+    0 0.15em 0.1em #0008;
+    transition: left var(--duration) linear;
+    animation: squeeze var(--duration) 1 linear forwards;
+  }
   
-	&::before {
-	  content: '';
-	  position: absolute;
-	  top: -1px;
-	  left: -1px;
-	  width: calc(100% + 2px);
-	  height: calc(100% + 2px);
-	  -webkit-mask:
-		radial-gradient(45% 75% at 50% -50%, #0000 99%, #000) 50% 0 / 2em 0.2em no-repeat,
-		radial-gradient(45% 75% at 50% 150%, #0000 99%, #000) 50% 100% / 2em 0.2em no-repeat,
-		linear-gradient(90deg, #000 0.55em, #0000 0 1.95em, #000 0),
-		linear-gradient(#000 0 0) 50% 50% / 2em 0.75em no-repeat
-		;
-	  border-radius: 3em;
-	  background: 
-		/* left light */
-		radial-gradient(circle at 0.505em 50%, #0004, var(--light-on) 0.11em, #0000 0.12em),
-		radial-gradient(50% 100% at 0.505em 45%, #fff9 0.025em, #fff0 0.08em),
+  &::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    -webkit-mask:
+    radial-gradient(45% 75% at 50% -50%, #0000 99%, #000) 50% 0 / 2em 0.2em no-repeat,
+    radial-gradient(45% 75% at 50% 150%, #0000 99%, #000) 50% 100% / 2em 0.2em no-repeat,
+    linear-gradient(90deg, #000 0.55em, #0000 0 1.95em, #000 0),
+    linear-gradient(#000 0 0) 50% 50% / 2em 0.75em no-repeat
+    ;
+    border-radius: 3em;
+    background: 
+    /* left light */
+    radial-gradient(circle at 0.505em 50%, #0004, var(--light-on) 0.11em, #0000 0.12em),
+    radial-gradient(50% 100% at 0.505em 45%, #fff9 0.025em, #fff0 0.08em),
   
-		radial-gradient(circle at 0.505em 50%, #0000 0.025em, #0008 0.12em, #0000 0.13em),
-		radial-gradient(circle at 0.505em 50%, var(--off) 0.11em, #0000 0.12em),
-		radial-gradient(circle at 0.505em 50%, #000 0.10em, #0000 0.16em),
-		radial-gradient(circle at 0.505em 49%, #000 0.12em, #fff0 0.13em),
-		radial-gradient(circle at 0.505em 51%, #fff7 0.12em, #fff0 0.13em),
-		/* right light */
-		radial-gradient(circle at 2.005em 50%, #0004, var(--light-off) 0.11em, #0000 0.12em),
-		radial-gradient(50% 100% at 2.005em 45%, #fff9 0.025em, #fff0 0.08em),
-		radial-gradient(circle at 2.005em 50%, #0000 0.025em, #0008 0.12em, #0000 0.13em),
-		radial-gradient(circle at 2.005em 50%, var(--on) 0.11em, #0000 0.12em),
-		radial-gradient(circle at 2.005em 50%, #000 0.10em, #0000 0.16em),
-		radial-gradient(circle at 2.005em 49%, #000 0.12em, #fff0 0.13em),
-		radial-gradient(circle at 2.005em 51%, #fff7 0.12em, #fff0 0.13em),
-		/* background base */
-		radial-gradient(45% 100% at 50% 130%, #0007 50%, #0000) 50% 100% / 2em 0.2em no-repeat,
-		radial-gradient(45% 100% at 50% -30%, #0007 50%, #0000) 50% 0% / 2em 0.2em no-repeat,
-		#0c0c10a0;
-	  box-shadow:
-		inset 0 0 0.1em 0.005em #000,
-		inset 0 0 0.25em #0007
-	}
+    radial-gradient(circle at 0.505em 50%, #0000 0.025em, #0008 0.12em, #0000 0.13em),
+    radial-gradient(circle at 0.505em 50%, var(--off) 0.11em, #0000 0.12em),
+    radial-gradient(circle at 0.505em 50%, #000 0.10em, #0000 0.16em),
+    radial-gradient(circle at 0.505em 49%, #000 0.12em, #fff0 0.13em),
+    radial-gradient(circle at 0.505em 51%, #fff7 0.12em, #fff0 0.13em),
+    /* right light */
+    radial-gradient(circle at 2.005em 50%, #0004, var(--light-off) 0.11em, #0000 0.12em),
+    radial-gradient(50% 100% at 2.005em 45%, #fff9 0.025em, #fff0 0.08em),
+    radial-gradient(circle at 2.005em 50%, #0000 0.025em, #0008 0.12em, #0000 0.13em),
+    radial-gradient(circle at 2.005em 50%, var(--on) 0.11em, #0000 0.12em),
+    radial-gradient(circle at 2.005em 50%, #000 0.10em, #0000 0.16em),
+    radial-gradient(circle at 2.005em 49%, #000 0.12em, #fff0 0.13em),
+    radial-gradient(circle at 2.005em 51%, #fff7 0.12em, #fff0 0.13em),
+    /* background base */
+    radial-gradient(45% 100% at 50% 130%, #0007 50%, #0000) 50% 100% / 2em 0.2em no-repeat,
+    radial-gradient(45% 100% at 50% -30%, #0007 50%, #0000) 50% 0% / 2em 0.2em no-repeat,
+    #0c0c10a0;
+    box-shadow:
+    inset 0 0 0.1em 0.005em #000,
+    inset 0 0 0.25em #0007
+  }
   
-	&:checked {
-	  --color: var(--on); 
-	  --light-on: #000d;
-	  --light-off: #0001;
-	  atransition-delay: 0s, 0s, calc(var(--duration) / 1), 0s;
+  &:checked {
+    --color: var(--on); 
+    --light-on: #000d;
+    --light-off: #0001;
+    atransition-delay: 0s, 0s, calc(var(--duration) / 1), 0s;
   
-	  &::after {
-		left: 2em;
-		animation: squeeze2 var(--duration) 1 linear forwards;
-	  }
-	}
+    &::after {
+    left: 2em;
+    animation: squeeze2 var(--duration) 1 linear forwards;
+    }
+  }
   
-	&[disabled] {
-	  --on: #aaa;
-	  --off: #aaa;
-	  &, &::before, &::after {
-		transition-duration: 0s !important;
-		animation-duration: 0s !important;
-	  }
-	}
+  &[disabled] {
+    --on: #aaa;
+    --off: #aaa;
+    &, &::before, &::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    }
+  }
   }
   
   @media print {
-	.ellastic {
-	  &, &::before, &::after {
-		-webkit-print-color-adjust: exact;
-		print-color-adjust: exact;
-	  }
-	}
+  .ellastic {
+    &, &::before, &::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    }
+  }
   }
   
   @media (prefers-reduced-motion) {
-	.ellastic {
-	  &, &::before, &::after {
-		transition-duration: 0s !important;
-		animation-duration: 0s !important;
-	  }
-	}
+  .ellastic {
+    &, &::before, &::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+    }
+  }
   }
 
 
@@ -396,18 +410,18 @@ background: #208371;
 .menu{
 
     margin: 0;
-	padding: 0px;
+  padding: 0px;
     display: flex;
     /* Works well with 100% width  */
-    width: 100% 	;
+    width: 100%   ;
     font-size: large;
     position: fixed;
-	bottom: 0px;
-	left: 0px;
+  bottom: 0px;
+  left: 0px;
     align-items: center;
     justify-content: space-around;
     background-color: var(--bgColorMenu);
-	height: 60px;
+  height: 60px;
     
 }
 
@@ -424,15 +438,15 @@ background: #208371;
     justify-content: center;
     padding: 0.55em 0 0.85em;
     transition: transform var(--timeOut , var(--duration));
-	flex-direction: column;
+  flex-direction: column;
     color:#fff;
-	line-height: 1em;
+  line-height: 1em;
 }
 
 
 .icon{
     width: 35px;
-	height: 50;
+  height: 50;
     stroke: white;
     fill: transparent;
     stroke-width: 1pt;
@@ -447,11 +461,11 @@ background: #208371;
 
     animation: strok 1.5s reverse;
     stroke: #01fff4;
-	color:#01fff4;
+  color:#01fff4;
 }
 .menu__item.active{
 
-	color:#01fff4;
+  color:#01fff4;
 }
 
 @keyframes strok {
@@ -488,22 +502,17 @@ background: #208371;
     <div id='run_sign'></div>
     <ul class='signs_container'>
         <li id='sign1' class='sign'></li>
-        <li id='sign2' class='sign'></li>
+        <!-- <li id='sign2' class='sign'></li> -->
         <li id='sign3' class='sign'></li>
     </ul>
     <input type='checkbox' role='switch' id='toggle1' class='ellastic' />
-    <input type='checkbox' role='switch' id='toggle2' class='ellastic' />
-
-
-
-
 
 
 </div>
 <div id='run-button-container' class='card'>
 
-    <div class='pbutton' id='run_btn'>
-            تشغيل
+    <div class='pbutton power-btn' id='run_btn'>
+            <img src="image.png" style="width: 130px;height: 130px; user-select: none;" id="image"/>
       </div>
 
 
@@ -590,7 +599,7 @@ background: #208371;
 setInterval(()=>{
         new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/state';
+            const url = 'http://2.2.2.2/state';
             xhr.onreadystatechange = async() => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -604,14 +613,6 @@ setInterval(()=>{
                   else{
                     document.getElementById('toggle1').checked = false;
                     document.getElementById('sign1').style.backgroundColor='#3c3838';
-                    }
-                  if(xhr.responseText.split('#')[1]=='on'){
-                    document.getElementById('toggle2').checked = true;
-                    document.getElementById('sign2').style.backgroundColor='orange';
-                  }
-                  else{
-                    document.getElementById('toggle2').checked = false;
-                    document.getElementById('sign2').style.backgroundColor='#3c3838';
                     }
                   if(xhr.responseText.split('#')[2]=='on')
                     document.getElementById('sign3').style.backgroundColor='green';
@@ -647,14 +648,14 @@ setInterval(()=>{
 
 
 const goSettings=()=>{
-  window.open('settings.html', '_self');
+  window.open('settings', '_self');
 }
 
 
 const switchOneOn=()=>{
     new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/switch1On';
+        const url = 'http://2.2.2.2/switch1On';
     
         xhr.onreadystatechange = () => {
           if (xhr.readyState === 4) {
@@ -675,50 +676,7 @@ const switchOneOn=()=>{
 const switchOneOff=()=>{
     new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/switch1Off';
-    
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              resolve(xhr.responseText);
-              document.getElementById('isconnected').style.display='none';
-            } else {
-              document.getElementById('isconnected').style.display='block'; // no connection
-            }
-          }
-        };
-    
-        xhr.open('GET', url, true);
-        xhr.timeout = 1000; // set the timeout to 2 seconds
-        xhr.send();
-      });
-}
-
-const switchTwoOn=()=>{
-    new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/switch2On';
-    
-        xhr.onreadystatechange = () => {
-          if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-              resolve(xhr.responseText);
-              document.getElementById('isconnected').style.display='none';
-            } else {
-              document.getElementById('isconnected').style.display='block'; // no connection
-            }
-          }
-        };
-    
-        xhr.open('GET', url, true);
-        xhr.timeout = 1000; // set the timeout to 2 seconds
-        xhr.send();
-      });
-}
-const switchTwoOff=()=>{
-    new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const url = 'http://192.168.4.1/switch2Off';
+        const url = 'http://2.2.2.2/switch1Off';
     
         xhr.onreadystatechange = () => {
           if (xhr.readyState === 4) {
@@ -742,7 +700,7 @@ const switchTwoOff=()=>{
 const motorOn=()=>{
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    const url = 'http://192.168.4.1/motorOn';
+    const url = 'http://2.2.2.2/motorOn';
 
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
@@ -763,7 +721,7 @@ const motorOn=()=>{
 const motorOff=()=>{
   new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    const url = 'http://192.168.4.1/motorOff';
+    const url = 'http://2.2.2.2/motorOff';
 
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4) {
@@ -789,21 +747,21 @@ switch1.addEventListener('change',()=>{
 })
 
 
-const switch2=document.getElementById('toggle2');
-switch2.addEventListener('change',()=>{
-    if(switch2.checked) switchTwoOn();
-    else switchTwoOff();
-})
+
 
 const runButton=document.getElementById('run_btn');
 runButton.addEventListener('touchstart', motorOn);
 runButton.addEventListener('touchend', motorOff);
 
-
+  document.getElementById('image').addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+  });
 
 
 
     </script>
 
 </html>
-)";
+)rawliteral";
+
+#endif // Index_H
