@@ -223,7 +223,7 @@ body{
             window.open('remote', '_self');
             }
         const goUpdate=()=>{
-            window.open('update', '_self');
+            window.open('update_p', '_self');
             }
         const goTimer=()=>{
             window.open('timer', '_self');

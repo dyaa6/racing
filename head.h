@@ -61,6 +61,9 @@ void handleMemory();
 void formatAll();
 void handleDefaultNetwork();
 void handleNewNetwork();
+void handle_rais_jam();
+void handle_glassUP();
+void handle_glassDown();
 //device information
 String version="5"; 
 String dev_id="92uoslnw";

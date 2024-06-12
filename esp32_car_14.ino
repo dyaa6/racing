@@ -21,7 +21,9 @@
 #include "update_html.h"
 #include "sccess.h"
 #include "fail.h"
-#include "power_img.h"
+#include "power_img_R.h"
+#include "power_img_G.h"
+#include "defaultNetwork.h"
 RCSwitch mySwitch;
 
 String our_default_ssid = "Smart Car";//default
@@ -31,11 +33,12 @@ String password="";
  
 #define sensor_pin 18
 #define sw1 21
-#define btn3 32
+#define btn3 17 
 #define open_pin 27
 #define lock_pin 26
 #define light_pin 33
-#define box_pin 25
+#define jam_pin 25
+#define box_pin 32
 #define reset_pin 19
 
 
@@ -90,9 +93,13 @@ bool auto_start= false;
 
 WebServer server(80);
 
-void handleImage() {
+void handleImageR() {
   server.sendHeader("Content-Type", "image/png");
-  server.sendContent_P((const char *)image_data, sizeof(image_data));
+  server.sendContent_P((const char *)image_data_R, sizeof(image_data_R));
+}
+void handleImageG() {
+  server.sendHeader("Content-Type", "image/png");
+  server.sendContent_P((const char *)image_data_G, sizeof(image_data_G));
 }
 unsigned long start_time = 0; //*********************
 
@@ -107,7 +114,7 @@ bool TimerState= true;
 //jam variables
 unsigned long jamPrevMillis=0;
 bool jamState=false;
-int jamPeriod=10000;
+int jamPeriod=22000;
 
 
 
@@ -184,12 +191,12 @@ void setup() {
 
   pinMode(sensor_pin,INPUT);
   pinMode(sw1, OUTPUT);
-//pinMode(sw2,OUTPUT);   
+  pinMode(box_pin,OUTPUT); 
   pinMode(btn3,OUTPUT);   
   pinMode(open_pin,OUTPUT);   
   pinMode(lock_pin,OUTPUT);   
   pinMode(light_pin,OUTPUT);   
-  pinMode(box_pin,OUTPUT);
+  pinMode(jam_pin,OUTPUT);
   pinMode(reset_pin,INPUT);   
 
 
@@ -205,6 +212,8 @@ void setup() {
   server.on("/open",open_car);
   server.on("/lock",close_car);
   server.on("/trunk",handle_openBox);
+  server.on("/glassUP",handle_glassUP);
+  server.on("/glassDown",handle_glassDown);
   server.on("/currentPassword",dev_password);
   server.on("/format",format);
   server.on("/dev_ver",deviceVersion);
@@ -231,7 +240,11 @@ void setup() {
   server.on("/defaultNetwork",handleDefaultNetwork);
   server.on("/formatAll",formatAll);
   server.on("/showMemory",handleMemory);
-  server.on("/image.png", handleImage);
+  server.on("/image-R.png", handleImageR);
+  server.on("/image-G.png", handleImageG);
+  server.on("/de",[](){
+      server.send(200, "text/html", defaultNet);
+  });
   // get RF states
   server.on("/opn_state",handleOpenStateFlag);
   server.on("/index",[](){
@@ -240,7 +253,7 @@ void setup() {
   server.on("/",[](){
       server.send(200, "text/html", index_html);
   });
-  server.on("/update",[](){  server.send(200, "text/html", update); });
+  server.on("/update_p",[](){  server.send(200, "text/html", update); });
   server.on("/remote",[](){ server.send(200, "text/html", remote); });
   server.on("/settings",[](){ server.send(200, "text/html", settings); });
   server.on("/network",[](){ server.send(200, "text/html", network); });
@@ -372,7 +385,7 @@ if (auto_start){
     RunTheCarAgain();
     }
     tryTime=0;
-  }
+  }  
 }
 
 if(!digitalRead(sw1)){
@@ -395,23 +408,23 @@ if(!digitalRead(sw1)){
   //stop the jam
   if(jamState){
     if(millis()-jamPrevMillis>=jamPeriod){
-      digitalWrite(box_pin,LOW);
+      digitalWrite(jam_pin,LOW);
       jamState=false;
   }}
 
-// if(!digitalRead(reset_pin)){ //read zero
-//   delay(5000);
-//   if(!digitalRead(reset_pin)){
-//     digitalWrite(open_pin,HIGH);
-//     delay(400);
-//     digitalWrite(open_pin,LOW);
-//     delay(100);
-//     digitalWrite(lock_pin,HIGH);
-//     delay(400);
-//     digitalWrite(lock_pin,LOW);
-//     format();
-//   }
-// }
+if(!digitalRead(reset_pin)){ //read zero
+  delay(5000);
+  if(!digitalRead(reset_pin)){
+    digitalWrite(open_pin,HIGH);
+    delay(400);
+    digitalWrite(open_pin,LOW);
+    delay(100);
+    digitalWrite(lock_pin,HIGH);
+    delay(400);
+    digitalWrite(lock_pin,LOW);
+    format();
+  }
+}
 
 
   }//end loop
@@ -663,21 +676,28 @@ if(!digitalRead(sw1)){
       digitalWrite(light_pin,LOW);
   }
   void handle_openBox(){
-      // digitalWrite(box_pin,HIGH);
-      // digitalWrite(light_pin,HIGH);
-      // delay(500);
-      // digitalWrite(box_pin,LOW);
-      // digitalWrite(light_pin,LOW);
+      digitalWrite(box_pin,HIGH);
+      digitalWrite(light_pin,HIGH);
+      delay(500);
+      digitalWrite(box_pin,LOW);
+      digitalWrite(light_pin,LOW);
       server.send(200, "text/plain","box opend");
 }
   void handle_openBox_remote(){
+      digitalWrite(box_pin,HIGH);
+      digitalWrite(light_pin,HIGH);
+      delay(400);
+      digitalWrite(box_pin,LOW);
+      digitalWrite(light_pin,LOW);
+}  
+void handle_rais_jam(){
       jamState=true;
       digitalWrite(box_pin,HIGH);
       jamPrevMillis=millis();
 }
  void close_car() {
       jamState=true;
-      digitalWrite(box_pin,HIGH);
+      digitalWrite(jam_pin,HIGH);
       jamPrevMillis=millis();
       digitalWrite(lock_pin,HIGH);
       digitalWrite(light_pin,HIGH);
@@ -688,7 +708,7 @@ if(!digitalRead(sw1)){
   }
  void close_car_remote() {
       jamState=true;
-      digitalWrite(box_pin,HIGH);
+      digitalWrite(jam_pin,HIGH);
       jamPrevMillis=millis();
       digitalWrite(lock_pin,HIGH);
       digitalWrite(light_pin,HIGH);
@@ -907,15 +927,13 @@ void authRun() {
       String st5=String(box_code);
       server.send(200, "text/plain",st1+"#"+st2+"#"+st3+"#"+st4+"#"+st5);
   }
-
-      void handleState() {
+ void handleState() {
         String st1=(digitalRead(sw1))? "on":"off";
-        String st2="";//(digitalRead(sw2))? "on":"off";
-        String st3=(digitalRead(btn3))? "on":"off";
+        String st2=(digitalRead(btn3))? "on":"off";
         String sens=(digitalRead(sensor_pin))? "on":"off";
         String countVal= TimerState? "":String(counter);
         //double temp =0;// analogValueToTemperature(); 
-        server.send(200, "text/plain",st1+"#"+st2+"#"+st3+"#"+sens+"#"+NULL+"#"+countVal);//+"#"+String(temp));
+        server.send(200, "text/plain",st1+"#"+st2+"#"+sens+"#"+countVal);//+"#"+String(temp));
       } 
       void handleTimerState(){
         String countVal= TimerState? "":String(counter);
@@ -1062,6 +1080,12 @@ void formatAll() {
 }
 
 
+void handle_glassUP(){
+  digitalWrite(jam_pin,HIGH);
+}
+void handle_glassDown(){
+  digitalWrite(jam_pin,LOW);
+}
   void resetPower(){
     sw1_code=0;
     EEPROM.write(SW1_F, 0);
