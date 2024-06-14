@@ -610,10 +610,12 @@ setInterval(()=>{
                   if(xhr.responseText.split('#')[0]=='on'){
                     document.getElementById('toggle1').checked = true;
                     document.getElementById('sign1').style.backgroundColor='red';
+                    document.getElementById('image').src='image-G.png';
                   }
                   else{
                     document.getElementById('toggle1').checked = false;
                     document.getElementById('sign1').style.backgroundColor='#3c3838';
+                    document.getElementById('image').src='image-R.png';
                     }
                   if(xhr.responseText.split('#')[1]=='on')
                     document.getElementById('sign3').style.backgroundColor='green';
@@ -625,8 +627,7 @@ setInterval(()=>{
                      document.getElementById('run_sign').style.backgroundColor='#3c3838';
                      // set the timer
                   if(xhr.responseText.split('#')[3]!=undefined)
-                    document.getElementById('timer').innerHTML=formatTime(parseInt(xhr.responseText.split('#')[5]));
-                    //setTimer(formatTime(parseInt(xhr.responseText.split('#')[5])));
+                    document.getElementById('timer').innerHTML=formatTime(parseInt(xhr.responseText.split('#')[3]));
                   else
                     setTimer('-');
                   

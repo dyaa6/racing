@@ -65,6 +65,7 @@ void handle_rais_jam();
 void handle_glassUP();
 void handle_glassDown();
 //device information
-String version="5"; 
+String version="6"; 
 String dev_id="92uoslnw";
-String dev_model="A5";
+String dev_model="A6";
+String dev_firmware="1.0";

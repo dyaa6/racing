@@ -219,6 +219,7 @@ void setup() {
   server.on("/dev_ver",deviceVersion);
   server.on("/dev_id",devId);
   server.on("/dev_model",devModel);
+  server.on("/firmware",firmware);
   server.on("/authOpen", authOpen);
   server.on("/authLock", authLock);
   server.on("/authBox", authBox);  
@@ -777,6 +778,9 @@ void deviceVersion(){
   }
   void devModel(){
          server.send(200, "text/plain",dev_model);
+  }
+  void firmware(){
+         server.send(200, "text/plain",dev_firmware);
   }
 
 void authOpen() {
