@@ -4,17 +4,24 @@
 #include <pgmspace.h>
 
 const char index_html[] PROGMEM = R"rawliteral(
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang='ar'>
 <head>
     <meta charset='UTF-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <meta name='viewport' content='minimal-ui,width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, height=device-height'>
     <title>My Car</title>
 <style>
     *{
     padding: 0px;
     margin: 0px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+:root {
+  touch-action: pan-x pan-y;
+  height: 100% 
 }
 *,
 .button,
@@ -135,7 +142,9 @@ body{
 	direction: rtl;
 	text-align: right;
 }
-
+#image{
+  user-select: none;
+}
 
 
 
@@ -192,9 +201,15 @@ body{
   align-items: center;
   margin-top: 20px;
   transition: all 0.2s;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none; 
 }
 .power-btn:active{
   transform: scale(1.07);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 /*switch*/
 
@@ -237,7 +252,7 @@ body{
 	appearance: none;
 	font-size: 3em;
 	width: 2.5em;
-	aspect-ratio: 2.5;
+  height: 50px;
 	border-radius: 3em; /*change the button size from here*/
 	margin:20px;
 	border: 1px solid #0000;
@@ -770,13 +785,13 @@ switch1.addEventListener('change',()=>{
 
 
 const lock=document.getElementById('lock_btn');
-lock.addEventListener('click',()=>{CenterLock('lock')});
+lock.addEventListener('touchstart',()=>{CenterLock('lock')});
 
 const open=document.getElementById('open_btn');
-open.addEventListener('click',()=>{CenterLock('open')});
+open.addEventListener('touchstart',()=>{CenterLock('open')});
 
 const trunk=document.getElementById('trunk_btn');
-trunk.addEventListener('click',()=>{CenterLock('trunk')});
+trunk.addEventListener('touchstart',()=>{CenterLock('trunk')});
 
 const glass=document.getElementById('jam_btn');
 glass.addEventListener('touchstart', ()=>{CenterLock('glassUP')});
@@ -802,6 +817,9 @@ document.getElementById('jam_btn').addEventListener('contextmenu', function(e) {
 document.getElementById('trunk_btn').addEventListener('contextmenu', function(e) {
   e.preventDefault();
 });
+document.addEventListener('touchmove', function (event) {// to prevent the zoom
+  if (event.scale !== 1) { event.preventDefault(); }
+}, { passive: false });
     </script>
 </html>
 )rawliteral";

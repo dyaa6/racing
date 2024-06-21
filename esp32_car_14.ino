@@ -413,19 +413,19 @@ if(!digitalRead(sw1)){
       jamState=false;
   }}
 
-if(!digitalRead(reset_pin)){ //read zero
-  delay(5000);
-  if(!digitalRead(reset_pin)){
-    digitalWrite(open_pin,HIGH);
-    delay(400);
-    digitalWrite(open_pin,LOW);
-    delay(100);
-    digitalWrite(lock_pin,HIGH);
-    delay(400);
-    digitalWrite(lock_pin,LOW);
-    format();
-  }
-}
+// if(!digitalRead(reset_pin)){ //read zero
+//   delay(5000);
+//   if(!digitalRead(reset_pin)){
+//     digitalWrite(open_pin,HIGH);
+//     delay(400);
+//     digitalWrite(open_pin,LOW);
+//     delay(100);
+//     digitalWrite(lock_pin,HIGH);
+//     delay(400);
+//     digitalWrite(lock_pin,LOW);
+//     format();
+//   }
+// }
 
 
   }//end loop
