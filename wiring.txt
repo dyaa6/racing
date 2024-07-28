@@ -1,0 +1,35 @@
+To connect an nRF24L01 module to an ESP32, you'll need to make the following connections:
+
+VCC (nRF24L01) to 3.3V (ESP32)
+GND (nRF24L01) to GND (ESP32)
+CE (nRF24L01) to GPIO 4 (ESP32) - as per your code
+CSN (nRF24L01) to GPIO 5 (ESP32) - as per your code
+SCK (nRF24L01) to GPIO 18 (ESP32) - default SPI SCK pin
+MOSI (nRF24L01) to GPIO 23 (ESP32) - default SPI MOSI pin
+MISO (nRF24L01) to GPIO 19 (ESP32) - default SPI MISO pin
+
+
+
+To connect the nRF24L01 module to a NodeMCU, you can use the following connections:
+
+VCC (nRF24L01) to 3.3V (NodeMCU)
+GND (nRF24L01) to GND (NodeMCU)
+CE (nRF24L01) to D2 (NodeMCU) - as per your code
+CSN (nRF24L01) to D1 (NodeMCU) - as per your code
+SCK (nRF24L01) to D5 (NodeMCU) - default SPI SCK pin
+MOSI (nRF24L01) to D7 (NodeMCU) - default SPI MOSI pin
+MISO (nRF24L01) to D6 (NodeMCU) - default SPI MISO pin
+
+
+
+
+connect mpu6050 to the esp32:
+VCC of MPU6050 to 3.3V of ESP32
+GND of MPU6050 to GND of ESP32
+SCL of MPU6050 to GPIO 22 of ESP32
+SDA of MPU6050 to GPIO 21 of ESP32
+
+
+connect the gps :
+rx ----16
+tx----- 17
