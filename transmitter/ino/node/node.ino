@@ -24,7 +24,7 @@
 #include <TinyGPS++.h>
 #include <HardwareSerial.h>
 
-String our_default_ssid = "node 1";//default
+String our_default_ssid = "node 2";//default
 const char* default_password = "";
 String ssid = "";
 String password="";
@@ -135,7 +135,6 @@ void setup() {
   server.enableCORS(true);
   server.begin();
   //----------------------------
-   Serial.begin(115200);
   SerialGPS.begin(9600, SERIAL_8N1, 16, 17);
   Wire.begin(21, 22); // SDA, SCL
 
@@ -150,14 +149,13 @@ void setup() {
 
   if (!radio.begin()) {
     Serial.println("Failed to initialize radio");
-    //while (1) { delay(10); }
+    while (1) { delay(10); }
   }
 
-  radio.openWritingPipe(address);
-  radio.setPALevel(RF24_PA_HIGH);
-  radio.setDataRate(RF24_250KBPS);
-  radio.setChannel(76);
-  radio.stopListening();
+  // Set the NRF24L01 radio configuration
+  radio.setPALevel(RF24_PA_LOW);
+  radio.setChannel(108);
+  radio.openWritingPipe(0xF0F0F0F0E1LL);
 
   Serial.println("Initialization complete");
   } //end setup
@@ -359,7 +357,7 @@ void sendData() {
   radio.powerUp();
   delay(5);
 
-  if (gps.location.isValid()) {
+  //if (gps.location.isValid()) {
     bool report = radio.write(&sensorData, sizeof(sensorData));
     if (!report) {
       Serial.println("Failed to send data");
@@ -375,9 +373,9 @@ void sendData() {
     } else {
       Serial.println("Data sent successfully");
     }
-  } else {
-    Serial.println("Waiting for valid GPS data");
-  }
+  // } else {
+  //   Serial.println("Waiting for valid GPS data");
+  // }
 
   radio.powerDown();
 }
