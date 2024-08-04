@@ -249,6 +249,10 @@ h2{
     <div class="item">lon: </div>
     <div class="item" id="lon">--</div>
   </div>
+  <div class="row">
+    <div class="item">Device Name: </div>
+    <div class="item" id="DeviceName">--</div>
+  </div>
 </div>
 
 
@@ -294,7 +298,7 @@ h2{
 setInterval(()=>{
         new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.4.1/state';
+            const url = 'http://192.168.5.106/state';
             xhr.onreadystatechange = async() => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -308,6 +312,7 @@ setInterval(()=>{
                   document.getElementById('gyroZ').innerHTML=xhr.responseText.split('#')[5];
                   document.getElementById('lat').innerHTML=xhr.responseText.split('#')[6];
                   document.getElementById('lon').innerHTML=xhr.responseText.split('#')[7];                  
+                  document.getElementById('DeviceName').innerHTML=xhr.responseText.split('#')[8];                  
                 } else {
                     document.getElementById('isconnected').style.display='block'; // no connection
                 }

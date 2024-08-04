@@ -1,11 +1,15 @@
-// last edit 2024/7/25 
-// EEPROM map: 2-45 for password, 45-85 for ssid,
-
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <EEPROM.h>
 #include <Update.h>
+#include <HTTPClient.h>
+#include <SPI.h>
+#include <nRF24L01.h>
+#include <RF24.h>
+#include <Ticker.h>
+
+// Include the relevant headers
 #include "head.h"
 #include "main.h"
 #include "settings.h"
@@ -14,89 +18,80 @@
 #include "sccess.h"
 #include "fail.h"
 #include "defaultNetwork.h"
-//---------------
-#include <SPI.h>
-#include <nRF24L01.h>
-#include <RF24.h>
-//-------------------
-String our_default_ssid = "Receiver";//default
-const char* default_password = "";
-String ssid = "";
-String password="";
 
-// Define the EEPROM address to store the password at
+// Define constants
 #define PASSWORD_ADDR 2
 #define SSID_ADDR 45
-
-#define Def_SSID 600 // default ssid name location
-#define Def_Password 640 // default password location
+#define Def_SSID 600
+#define Def_Password 640
 #define Net_F 179
-WebServer server(80);
 
-//---------------
-RF24 radio(4, 5); // CE, CSN
-//RF24 radio(D2, D1); // CE, CSN //fpr nodemcu
+String our_default_ssid = "Receiver";
+const char* default_password = "";
+String ssid = "";
+String password = "";
+
+// Define nRF24L01 radio module
+RF24 radio(4, 5);
 const byte address[6] = "00001";
 
+// Define structure to hold sensor data
 struct SensorData {
+  char deviceName[6];
   float accX, accY, accZ;
   float gyroX, gyroY, gyroZ;
   float lat, lon;
+
 } __attribute__((packed));
 
 SensorData receivedData;
-
 unsigned long lastReceivedTime = 0;
-const unsigned long timeoutDuration = 5000; // 5 seconds timeout
+const unsigned long timeoutDuration = 5000;
 
+#define DNS_PORT 53
+const char* apSSID = "ESP32_Config";
+const char* apPassword = "12345678";
+
+// Define web server
+WebServer server(80);
+Ticker ticker1;
 
 void setup() {
   EEPROM.begin(1024);
   Serial.begin(115200);
-  if(EEPROM.read(Net_F)){
-    password=readStringFromEEPROM(PASSWORD_ADDR);
-    ssid = readStringFromEEPROM(SSID_ADDR);
+  ticker1.attach(5, sendDataToServer);
+  
+  // Attempt to connect to WiFi using stored credentials
+  if (!connectToWiFiFromEEPROM()) {
+    setupAP();  // Setup access point if WiFi connection fails
   }
-  else{
-    password=readStringFromEEPROM(Def_Password);
-    ssid = readStringFromEEPROM(Def_SSID);
-  }
-  if (password.isEmpty() || ssid.isEmpty() || password.length()>30 || ssid.length()>30){
-    ssid=our_default_ssid;
-    password= default_password;
-  }
-  WiFi.disconnect();
 
-  WiFi.softAP(ssid,password);
-  server.on("/state",handleState);
-  server.on("/currentPassword",dev_password);
-  server.on("/format",format);
-  server.on("/dev_ver",deviceVersion);
-  server.on("/dev_id",devId);
-  server.on("/dev_model",devModel);
-  server.on("/firmware",firmware);
-  server.on("/networkConfig",handleNewNetwork);
-  server.on("/defaultNetwork",handleDefaultNetwork);
-  server.on("/formatAll",formatAll);
-  server.on("/showMemory",handleMemory);
-  server.on("/de",[](){
-  server.send(200, "text/html", defaultNet);});
-  server.on("/index.html",[](){ server.send(200, "text/html", index_html); });
-  server.on("/index",[](){ server.send(200, "text/html", index_html); });
-  server.on("/",[](){  server.send(200, "text/html", index_html); });
-  server.on("/update_p.html",[](){  server.send(200, "text/html", update); });
-  server.on("/settings.html",[](){ server.send(200, "text/html", settings); });
-  server.on("/network.html",[](){ server.send(200, "text/html", network); });
+  // Define server routes
+  server.on("/state", handleState);
+  server.on("/currentPassword", dev_password);
+  server.on("/format", format);
+  server.on("/dev_ver", deviceVersion);
+  server.on("/dev_id", devId);
+  server.on("/dev_model", devModel);
+  server.on("/firmware", firmware);
+  server.on("/formatAll", formatAll);
+  server.on("/showMemory", handleMemory);
+  server.on("/de", []() { server.send(200, "text/html", defaultNet); });
+  server.on("/index.html", []() { server.send(200, "text/html", index_html); });
+  server.on("/index", []() { server.send(200, "text/html", index_html); });
+  server.on("/", []() { server.send(200, "text/html", index_html); });
+  server.on("/update_p.html", []() { server.send(200, "text/html", update); });
+  server.on("/settings.html", []() { server.send(200, "text/html", settings); });
+  server.on("/network.html", []() { server.send(200, "text/html", network); });
   server.on("/up", HTTP_GET, []() {
-    server.send(200, "text/html", 
-      "<form method='POST' action=' ' enctype='multipart/form-data'>"
+    server.send(200, "text/html",
+      "<form method='POST' action='/update' enctype='multipart/form-data'>"
       "<input type='file' name='update'>"
       "<input type='submit' value='Update'>"
       "</form>");
   });
   server.on("/update", HTTP_POST, []() {
     server.sendHeader("Connection", "close");
-        //server.send_P(200, "text/html", html); // Use send_P to access PROGMEM content
     server.send(200, "text/html", (Update.hasError()) ? fail_m : sccess_m);
     delay(100);
     ESP.restart();
@@ -104,7 +99,7 @@ void setup() {
     HTTPUpload& upload = server.upload();
     if (upload.status == UPLOAD_FILE_START) {
       Serial.printf("Update: %s\n", upload.filename.c_str());
-      if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { // start with max available size
+      if (!Update.begin(UPDATE_SIZE_UNKNOWN)) {
         Update.printError(Serial);
       }
     } else if (upload.status == UPLOAD_FILE_WRITE) {
@@ -112,7 +107,7 @@ void setup() {
         Update.printError(Serial);
       }
     } else if (upload.status == UPLOAD_FILE_END) {
-      if (Update.end(true)) { // true to set the size to the current progress
+      if (Update.end(true)) {
         Serial.printf("Update Success: %u bytes\nRebooting...\n", upload.totalSize);
       } else {
         Update.printError(Serial);
@@ -129,205 +124,286 @@ void setup() {
   server.enableCORS(true);
   server.begin();
 
-  //---------------------
-  
   Serial.println("nRF24L01 Receiver Starting");
-  
   if (!radio.begin()) {
     Serial.println("Radio hardware not responding!");
-    while (1) {} // hold in infinite loop
   }
-  
-  // Set the NRF24L01 radio configuration
+
   radio.setPALevel(RF24_PA_LOW);
   radio.setChannel(108);
   radio.openReadingPipe(1, 0xF0F0F0F0E1LL);
   radio.startListening();
   Serial.println("Receiver initialized and listening...");
+}
 
-  } //end setup
- 
 void loop() {
   server.handleClient();
-   //--------------
-   if (radio.available()) {
+  if (radio.available()) {
     radio.read(&receivedData, sizeof(receivedData));
     lastReceivedTime = millis();
-    printData();
+    //printData();
   } else if (millis() - lastReceivedTime > timeoutDuration) {
-    Serial.println("No data received yet");
-    delay(50);  // Wait a second before checking again
+    delay(50);
   }
+}
 
-  
-  }//end loop
 void printData() {
   Serial.println("Data received:");
   Serial.print("Acc X: "); Serial.print(receivedData.accX);
   Serial.print(" Y: "); Serial.print(receivedData.accY);
   Serial.print(" Z: "); Serial.println(receivedData.accZ);
   Serial.print("Gyro X: "); Serial.print(receivedData.gyroX);
-  Serial.print(" Y: "); Serial.print(receivedData.gyroX);
+  Serial.print(" Y: "); Serial.print(receivedData.gyroY);
   Serial.print(" Z: "); Serial.println(receivedData.gyroZ);
   Serial.print("Lat: "); Serial.print(receivedData.lat, 6);
   Serial.print(" Lon: "); Serial.println(receivedData.lon, 6);
+  Serial.print("Device Name: "); Serial.println(receivedData.deviceName);
   Serial.println();
 }
 
-
-
-
-
 void handleRoot() {
-      server.send(200, "text/plain","developed by ACSD");
-    }
-
-void handleNewNetwork() {
-  if (server.hasArg("pass") && server.hasArg("ssid")) {
-    String newPassword = server.arg("pass");
-    String newSSID = server.arg("ssid");
-
-    if (!newPassword.isEmpty() && newPassword.length() >= 8 && !newSSID.isEmpty()) {
-      password = newPassword;
-      writeStringToEEPROM(password, PASSWORD_ADDR);
-      writeStringToEEPROM(newSSID, SSID_ADDR);
-      EEPROM.write(Net_F, 1);
-      EEPROM.commit();
-      delay(1000);
-      ESP.restart();
-      server.send(200, "text/plain", "New network credentials have been updated");
-    } else {
-      server.send(400, "text/plain", "Invalid password or SSID details");
-    }
-  } else {
-    server.send(400, "text/plain", "SSID and password are required");
-  }
+  String html = "<html><body><h1>ESP32 Network Configuration</h1><form action='/submit' method='post'>"
+                "SSID: <input type='text' name='ssid'><br>"
+                "Password: <input type='password' name='password'><br>"
+                "<input type='submit' value='Connect'>"
+                "</form></body></html>";
+  server.send(200, "text/html", html);
 }
 
-
-void handleDefaultNetwork() {
-  if (server.hasArg("defPass") && server.hasArg("ssid")) {
-    String defaultPassword = server.arg("defPass");
-    String defSSID = server.arg("ssid");
-
-    if (!defaultPassword.isEmpty() && !defSSID.isEmpty()) {
-      password = defaultPassword;
-      writeStringToEEPROM(password, Def_Password);
-      writeStringToEEPROM(defSSID, Def_SSID);
-      // EEPROM.write(PASS_F, 1);
-      // EEPROM.write(SSID_F, 1);
-      // EEPROM.commit();
-      server.send(200, "text/plain", "New Network credentials have been updated");
-      delay(1000);
-      ESP.restart();
-      return;
-    }
-  }
-
-  server.send(400, "text/plain", "Incorrect or incomplete request details!");
+void dev_password() {
+  server.send(200, "text/plain", password);
 }
-                             
 
+void deviceVersion() {
+  server.send(200, "text/plain", version);
+}
 
-void dev_password(){
-         server.send(200, "text/plain",password);
-  }
-void deviceVersion(){
-         server.send(200, "text/plain",version);
+void devId() {
+  server.send(200, "text/plain", dev_id);
+}
 
-  }
-  void devId(){
-         server.send(200, "text/plain",dev_id);
-  }
-  void devModel(){
-         server.send(200, "text/plain",dev_model);
-  }
-  void firmware(){
-         server.send(200, "text/plain",dev_firmware);
-  }
+void devModel() {
+  server.send(200, "text/plain", dev_model);
+}
 
-
-
+void firmware() {
+  server.send(200, "text/plain", dev_firmware);
+}
 
 void handleState() {
-    String recievedData = 
+  String recievedData =
     String(receivedData.accX) + "#" + String(receivedData.accY) + "#" + String(receivedData.accZ) + "#" +
     String(receivedData.gyroX) + "#" + String(receivedData.gyroY) + "#" + String(receivedData.gyroZ) + "#" +
-    String(receivedData.lat, 6) + "#" + String(receivedData.lon, 6);
-    server.send(200, "text/plain", recievedData);
-  } 
-  void writeStringToEEPROM(String str, int address) {
-          int length = str.length();
-          for (int i = 0; i < length; i++) {
-            EEPROM.write(address + i, str.charAt(i));
-          }
-          EEPROM.write(address + length, '\0'); // Null-terminate the string
-          EEPROM.commit();
-        }
+    String(receivedData.lat, 6) + "#" + String(receivedData.lon, 6) + "#" + receivedData.deviceName;
+  server.send(200, "text/plain", recievedData);
+}
 
-long readNumberFromEEPROM(int address) {
-    String str;
-    char character;
-    int i = 0;
-    while (true) {
-      character = EEPROM.read(address + i);
-      if (character == '\0') {
-        break;
-      }
-      str += character;
-      i++;
-    }
-    long number = str.toInt();
-  return number;
+void writeStringToEEPROM(String str, int address) {
+  Serial.print("Writing to EEPROM at address ");
+  Serial.print(address);
+  Serial.print(": ");
+  Serial.println(str);
+  
+  int length = str.length();
+  for (int i = 0; i < length; i++) {
+    EEPROM.write(address + i, str[i]);
   }
+  EEPROM.write(address + length, '\0');
+  EEPROM.commit();
+}
 
+void format() {
+  String message = "Data Formatted!";
+  server.send(200, "text/plain", message);
+}
 
-String readStringFromEEPROM(int address) {
-    String str;
-    char character;
-    int i = 0;
-    while (true) {
-      character = EEPROM.read(address + i);
-      if (character == '\0') {
-        break;
-      }
-      str += character;
-      i++;
-    }
-  return str;
-  }
-
-
-
-
-
+void formatAll() {
+  String message = "Data Formatted!";
+  server.send(200, "text/plain", message);
+}
 
 void handleMemory() {
-    String eepromContent = "";
-    // Read and display the entire EEPROM content
-    for (int i = 0; i < EEPROM.length(); i++) {
-        byte value = EEPROM.read(i);
-        eepromContent += String(value) + "  ";
-    }
-    server.send(200, "text/plain", eepromContent);
-}
-void format() {
-  for (int i = 0; i < 590; i++) {
-    EEPROM.write(i, 0); // Set each byte in EEPROM to 0
-  }
-  EEPROM.commit(); 
-  server.send(200, "text/plain", "erased");
-  delay(800);
-  //ESP.reset();
-  ESP.restart();
-}
-void formatAll() {
-    for (int i = 0; i < EEPROM.length(); i++) {
-        EEPROM.write(i, 0); // Set each byte in EEPROM to 0
-    }
-    EEPROM.commit();
-    server.send(200, "text/plain", "Memory will be formatted");
-    delay(800);
-    ESP.restart();
+  server.send(200, "text/plain", "Memory has been printed");
 }
 
+void sendDataToServer() {
+  printData();
+
+  // Check if data is zero
+  if (receivedData.accX == 0 && receivedData.accY == 0 && receivedData.accZ == 0 &&
+      receivedData.gyroX == 0 && receivedData.gyroY == 0 && receivedData.gyroZ == 0 &&
+      receivedData.lat == 0 && receivedData.lon == 0) {
+    Serial.println("All data values are zero, not sending to server.");
+    return;
+  }
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+
+    // Construct the URL with the query parameters
+    String url = "https://nodemcu.hyantalm.com/save_data.php";
+    url += "?accX=" + String(receivedData.accX, 6) +
+           "&accY=" + String(receivedData.accY, 6) +
+           "&accZ=" + String(receivedData.accZ, 6) +
+           "&gyroX=" + String(receivedData.gyroX, 6) +
+           "&gyroY=" + String(receivedData.gyroY, 6) +
+           "&gyroZ=" + String(receivedData.gyroZ, 6) +
+           "&lat=" + String(receivedData.lat, 6) +
+           "&lon=" + String(receivedData.lon, 6) +
+           "&deviceName=" + urlencode(receivedData.deviceName);
+
+    // Print the URL for debugging
+    Serial.println("URL: " + url);
+
+    // Begin the request
+    http.begin(url);
+    int httpResponseCode = http.GET();
+
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      receivedData.accX=0;
+      receivedData.accY=0;
+      receivedData.accZ=0;
+      receivedData.gyroX=0;
+      receivedData.gyroY=0;
+      receivedData.gyroZ=0;
+      receivedData.lat=0;
+      receivedData.lon=0;
+      Serial.println("HTTP Response code: " + String(httpResponseCode));
+      Serial.println("Server response: " + response);
+      Serial.println("Data successfully sent to the server.");
+    } else {
+      Serial.print("Error on sending GET: ");
+      Serial.println(httpResponseCode);
+      Serial.println("URL: " + url);
+      Serial.println("WiFi Status: " + String(WiFi.status()));
+      Serial.println("HTTP Error: " + String(http.errorToString(httpResponseCode).c_str()));
+    }
+
+    http.end();
+  } else {
+    Serial.println("WiFi Disconnected");
+    Serial.println("WiFi Status: " + String(WiFi.status()));
+  }
+}
+
+
+String urlencode(String str) {
+  String encodedString = "";
+  char c;
+  char code0;
+  char code1;
+  char code2;
+  for (int i = 0; i < str.length(); i++) {
+    c = str.charAt(i);
+    if (c == ' ') {
+      encodedString += '+';
+    } else if (isalnum(c)) {
+      encodedString += c;
+    } else {
+      code1 = (c & 0xf) + '0';
+      if ((c & 0xf) > 9) {
+        code1 = (c & 0xf) - 10 + 'A';
+      }
+      c = (c >> 4) & 0xf;
+      code0 = c + '0';
+      if (c > 9) {
+        code0 = c - 10 + 'A';
+      }
+      code2 = '\0';
+      encodedString += '%';
+      encodedString += code0;
+      encodedString += code1;
+    }
+    yield();
+  }
+  return encodedString;
+}
+
+
+bool connectToWiFiFromEEPROM() {
+  String ssid = readStringFromEEPROM(SSID_ADDR);
+  String password = readStringFromEEPROM(PASSWORD_ADDR);
+
+  Serial.print("Read SSID from EEPROM: ");
+  Serial.println(ssid);
+  Serial.print("Read Password from EEPROM: ");
+  Serial.println(password);
+
+  if (ssid.isEmpty()) {
+    Serial.println("SSID is empty, cannot connect to WiFi.");
+    return false;
+  }
+
+  WiFi.begin(ssid.c_str(), password.isEmpty() ? NULL : password.c_str());
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  unsigned long startTime = millis();
+  while (WiFi.status() != WL_CONNECTED) {
+    if (millis() - startTime > 10000) {
+      Serial.println("Failed to connect to WiFi within timeout.");
+      return false;
+    }
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println();
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  return true;
+}
+
+void setupAP() {
+  WiFi.mode(WIFI_AP);
+  WiFi.softAP(apSSID, apPassword);
+
+  server.on("/", handleRoot);
+  server.on("/submit", HTTP_POST, []() {
+    ssid = server.arg("ssid");
+    password = server.arg("password");
+    if (ssid.length() > 0) {
+      writeStringToEEPROM(ssid, SSID_ADDR);
+      writeStringToEEPROM(password, PASSWORD_ADDR);
+      EEPROM.commit();
+      server.send(200, "text/html", "<html><body><h1>Credentials saved!</h1><p>ESP32 will now restart.</p></body></html>");
+      delay(1000);
+      ESP.restart();
+    } else {
+      server.send(400, "text/html", "<html><body><h1>Error</h1><p>SSID too short.</p></body></html>");
+    }
+  });
+
+  server.begin();
+
+  Serial.println();
+  Serial.println("WiFi AP started");
+  Serial.print("SSID: ");
+  Serial.println(apSSID);
+  Serial.print("Password: ");
+  Serial.println(apPassword);
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.softAPIP());
+}
+
+String readStringFromEEPROM(int address) {
+  char data[100];
+  int length = 0;
+  for (int i = address; i < address + 100; i++) {
+    data[length] = EEPROM.read(i);
+    if (data[length] == '\0') {
+      break;
+    }
+    length++;
+  }
+  String str = String(data);
+  Serial.print("Read from EEPROM at address ");
+  Serial.print(address);
+  Serial.print(": ");
+  Serial.println(str);
+  return str;
+}

@@ -20,6 +20,7 @@ void sendData();
 void displayInfo();
 
 //device information
+float deviceNum=2.0;
 String version="1"; 
 String dev_id="92uoslnw";
 String dev_model="A1";

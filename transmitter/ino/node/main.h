@@ -249,6 +249,10 @@ h2{
     <div class="item">lon: </div>
     <div class="item" id="lon">--</div>
   </div>
+  <div class="row">
+    <div class="item">Name: </div>
+    <div class="item" id="deviceName">--</div>
+  </div>
 </div>
 
 
@@ -308,6 +312,7 @@ setInterval(()=>{
                   document.getElementById('gyroZ').innerHTML=xhr.responseText.split('#')[5];
                   document.getElementById('lat').innerHTML=xhr.responseText.split('#')[6];
                   document.getElementById('lon').innerHTML=xhr.responseText.split('#')[7];                  
+                  document.getElementById('deviceName').innerHTML=xhr.responseText.split('#')[8];                  
                 } else {
                     document.getElementById('isconnected').style.display='block'; // no connection
                 }

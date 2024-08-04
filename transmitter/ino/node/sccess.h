@@ -20,7 +20,7 @@ const char sccess_m[] PROGMEM = R"rawliteral(
 <body>
     <div>
         <div class='message'>تم تحديث نظام الجهاز بنجاح</div>
-        <a class='back-button' href='http://2.2.2.2'>الصفحة الرئيسية</a>
+        <a class='back-button' href='http://192.168.4.1'>الصفحة الرئيسية</a>
     </div>
 </body>
 </html>

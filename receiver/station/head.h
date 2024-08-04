@@ -1,7 +1,5 @@
 //headers
 void handleRoot();
-void handleNewNetwork();
-void handleDefaultNetwork();
 void dev_password();
 void deviceVersion();
 void devId();
@@ -15,9 +13,13 @@ void format();
 void formatAll();
 void printData();
 
+bool connectToWiFiFromEEPROM();
+void setupAP();
+void handleSubmit();
+void sendDataToServer();
 
 //device information
 String version="1"; 
-String dev_id="92uoslnw";
+String dev_id="1";
 String dev_model="A1";
 String dev_firmware="1.0";
