@@ -42,14 +42,18 @@ HardwareSerial SerialGPS(1);
 
 const byte address[6] = "00001";
 
-struct SensorData {
-  char deviceName[6];
+struct SensorData1 {
   float accX, accY, accZ;
   float gyroX, gyroY, gyroZ;
+} __attribute__((packed));
+
+struct SensorData2 {
+  char deviceName[8];
   float lat, lon;
 } __attribute__((packed));
 
-SensorData sensorData;
+SensorData1 sensorData1;
+SensorData2 sensorData2;
 
 void setup() {
   EEPROM.begin(1024);
@@ -67,10 +71,10 @@ void setup() {
     ssid = our_default_ssid;
     password = default_password;
   }
+    strncpy(sensorData2.deviceName, ssid.c_str(), sizeof(sensorData2.deviceName) - 1);
+  sensorData2.deviceName[sizeof(sensorData2.deviceName) - 1] = '\0'; // Null-terminate
   
-  strncpy(sensorData.deviceName, ssid.c_str(), sizeof(sensorData.deviceName) - 1);
-  sensorData.deviceName[sizeof(sensorData.deviceName) - 1] = '\0'; // Null-terminate
-  
+
   WiFi.disconnect();
   WiFi.softAP(ssid, password);
   
@@ -234,13 +238,7 @@ void firmware() {
   server.send(200, "text/plain", dev_firmware);
 }
 
-void handleState() {
-  String storedData = 
-    String(sensorData.accX) + "#" + String(sensorData.accY) + "#" + String(sensorData.accZ) + "#" +
-    String(sensorData.gyroX) + "#" + String(sensorData.gyroY) + "#" + String(sensorData.gyroZ) + "#" +
-    String(sensorData.lat, 6) + "#" + String(sensorData.lon, 6) + "#" + sensorData.deviceName;
-  server.send(200, "text/plain", storedData);
-}
+
 
 void writeStringToEEPROM(String str, int address) {
   int length = str.length();
@@ -295,32 +293,38 @@ void formatAll() {
   ESP.restart();
 }
 
+
 void readMPU6050() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
-  sensorData.accX = a.acceleration.x;
-  sensorData.accY = a.acceleration.y;
-  sensorData.accZ = a.acceleration.z;
-  sensorData.gyroX = g.gyro.x;
-  sensorData.gyroY = g.gyro.y;
-  sensorData.gyroZ = g.gyro.z;
+  sensorData1.accX = a.acceleration.x;
+  sensorData1.accY = a.acceleration.y;
+  sensorData1.accZ = a.acceleration.z;
+  sensorData1.gyroX = g.gyro.x;
+  sensorData1.gyroY = g.gyro.y;
+  sensorData1.gyroZ = g.gyro.z;
 }
 
 void readGPS() {
   while (SerialGPS.available() > 0) {
     if (gps.encode(SerialGPS.read())) {
       if (gps.location.isValid()) {
-        sensorData.lat = gps.location.lat();
-        sensorData.lon = gps.location.lng();
+        sensorData2.lat = gps.location.lat();
+        sensorData2.lon = gps.location.lng();
       }
     }
   }
 }
-
 void sendData() {
   radio.stopListening();
-  bool report = radio.write(&sensorData, sizeof(sensorData));
-  if (!report) {
+  radio.openWritingPipe(0xF0F0F0F0E1LL);
+  bool report1 = radio.write(&sensorData1, sizeof(sensorData1));
+  delay(10); // Small delay between transmissions
+  
+  radio.openWritingPipe(0xF0F0F0F0E2LL);
+  bool report2 = radio.write(&sensorData2, sizeof(sensorData2));
+  
+  if (!report1 || !report2) {
     Serial.println("Failed to send data");
   } else {
     Serial.println("Data sent successfully");
@@ -328,24 +332,32 @@ void sendData() {
 
   // Debug: Print the data being sent
   Serial.print("Sending: ");
-  Serial.print("AccX: "); Serial.print(sensorData.accX);
-  Serial.print(", AccY: "); Serial.print(sensorData.accY);
-  Serial.print(", AccZ: "); Serial.print(sensorData.accZ);
-  Serial.print(", GyroX: "); Serial.print(sensorData.gyroX);
-  Serial.print(", GyroY: "); Serial.print(sensorData.gyroY);
-  Serial.print(", GyroZ: "); Serial.print(sensorData.gyroZ);
-  Serial.print(", Lat: "); Serial.print(sensorData.lat, 6);
-  Serial.print(", Lon: "); Serial.println(sensorData.lon, 6);
+  Serial.print("AccX: "); Serial.print(sensorData1.accX);
+  Serial.print(", AccY: "); Serial.print(sensorData1.accY);
+  Serial.print(", AccZ: "); Serial.print(sensorData1.accZ);
+  Serial.print(", GyroX: "); Serial.print(sensorData1.gyroX);
+  Serial.print(", GyroY: "); Serial.print(sensorData1.gyroY);
+  Serial.print(", GyroZ: "); Serial.print(sensorData1.gyroZ);
+  Serial.print(", Lat: "); Serial.print(sensorData2.lat, 6);
+  Serial.print(", Lon: "); Serial.print(sensorData2.lon, 6);
+  Serial.print(", Device Name: "); Serial.println(sensorData2.deviceName);
+}
+void displayInfo() {
+  Serial.print("Acc X: "); Serial.print(sensorData1.accX);
+  Serial.print(" Y: "); Serial.print(sensorData1.accY);
+  Serial.print(" Z: "); Serial.print(sensorData1.accZ);
+  Serial.print(" | Gyro X: "); Serial.print(sensorData1.gyroX);
+  Serial.print(" Y: "); Serial.print(sensorData1.gyroY);
+  Serial.print(" Z: "); Serial.print(sensorData1.gyroZ);
+  Serial.print(" | Lat: "); Serial.print(sensorData2.lat, 6);
+  Serial.print(" Lon: "); Serial.print(sensorData2.lon, 6);
+  Serial.print(" | Device Name: "); Serial.println(sensorData2.deviceName);
 }
 
-void displayInfo() {
-  Serial.print("Acc X: "); Serial.print(sensorData.accX);
-  Serial.print(" Y: "); Serial.print(sensorData.accY);
-  Serial.print(" Z: "); Serial.print(sensorData.accZ);
-  Serial.print(" | Gyro X: "); Serial.print(sensorData.gyroX);
-  Serial.print(" Y: "); Serial.print(sensorData.gyroY);
-  Serial.print(" Z: "); Serial.print(sensorData.gyroZ);
-  Serial.print(" | Lat: "); Serial.print(sensorData.lat, 6);
-  Serial.print(" Lon: "); Serial.println(sensorData.lon, 6);
-  Serial.print("Device Name: "); Serial.println(sensorData.deviceName);
+void handleState() {
+  String storedData = 
+    String(sensorData1.accX) + "#" + String(sensorData1.accY) + "#" + String(sensorData1.accZ) + "#" +
+    String(sensorData1.gyroX) + "#" + String(sensorData1.gyroY) + "#" + String(sensorData1.gyroZ) + "#" +
+    String(sensorData2.lat, 6) + "#" + String(sensorData2.lon, 6) + "#" + sensorData2.deviceName;
+  server.send(200, "text/plain", storedData);
 }

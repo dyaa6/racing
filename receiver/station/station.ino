@@ -35,20 +35,22 @@ String password = "";
 RF24 radio(4, 5);
 const byte address[6] = "00001";
 
-// Define structure to hold sensor data
-struct SensorData {
-  char deviceName[6];
+
+struct SensorData1 {
   float accX, accY, accZ;
   float gyroX, gyroY, gyroZ;
-  float lat, lon;
-
 } __attribute__((packed));
 
-SensorData receivedData;
+struct SensorData2 {
+  char deviceName[8];
+  float lat, lon;
+} __attribute__((packed));
+
+SensorData1 receivedData1;
+SensorData2 receivedData2;
 unsigned long lastReceivedTime = 0;
 const unsigned long timeoutDuration = 5000;
 
-#define DNS_PORT 53
 const char* apSSID = "ESP32_Config";
 const char* apPassword = "12345678";
 
@@ -132,6 +134,7 @@ void setup() {
   radio.setPALevel(RF24_PA_LOW);
   radio.setChannel(108);
   radio.openReadingPipe(1, 0xF0F0F0F0E1LL);
+  radio.openReadingPipe(2, 0xF0F0F0F0E2LL);  // Add this line
   radio.startListening();
   Serial.println("Receiver initialized and listening...");
 }
@@ -139,25 +142,33 @@ void setup() {
 void loop() {
   server.handleClient();
   if (radio.available()) {
-    radio.read(&receivedData, sizeof(receivedData));
-    lastReceivedTime = millis();
-    //printData();
+    uint8_t pipeNum;
+    if (radio.available(&pipeNum)) {
+      if (pipeNum == 1) {
+        radio.read(&receivedData1, sizeof(receivedData1));
+        Serial.println("Received data part 1");
+      } else if (pipeNum == 2) {
+        radio.read(&receivedData2, sizeof(receivedData2));
+        Serial.println("Received data part 2");
+        lastReceivedTime = millis();
+        printData();  // Print data after receiving both parts
+      }
+    }
   } else if (millis() - lastReceivedTime > timeoutDuration) {
     delay(50);
   }
 }
-
 void printData() {
   Serial.println("Data received:");
-  Serial.print("Acc X: "); Serial.print(receivedData.accX);
-  Serial.print(" Y: "); Serial.print(receivedData.accY);
-  Serial.print(" Z: "); Serial.println(receivedData.accZ);
-  Serial.print("Gyro X: "); Serial.print(receivedData.gyroX);
-  Serial.print(" Y: "); Serial.print(receivedData.gyroY);
-  Serial.print(" Z: "); Serial.println(receivedData.gyroZ);
-  Serial.print("Lat: "); Serial.print(receivedData.lat, 6);
-  Serial.print(" Lon: "); Serial.println(receivedData.lon, 6);
-  Serial.print("Device Name: "); Serial.println(receivedData.deviceName);
+  Serial.print("Acc X: "); Serial.print(receivedData1.accX);
+  Serial.print(" Y: "); Serial.print(receivedData1.accY);
+  Serial.print(" Z: "); Serial.println(receivedData1.accZ);
+  Serial.print("Gyro X: "); Serial.print(receivedData1.gyroX);
+  Serial.print(" Y: "); Serial.print(receivedData1.gyroY);
+  Serial.print(" Z: "); Serial.println(receivedData1.gyroZ);
+  Serial.print("Lat: "); Serial.print(receivedData2.lat, 6);
+  Serial.print(" Lon: "); Serial.println(receivedData2.lon, 6);
+  Serial.print("Device Name: "); Serial.println(receivedData2.deviceName);
   Serial.println();
 }
 
@@ -191,11 +202,11 @@ void firmware() {
 }
 
 void handleState() {
-  String recievedData =
-    String(receivedData.accX) + "#" + String(receivedData.accY) + "#" + String(receivedData.accZ) + "#" +
-    String(receivedData.gyroX) + "#" + String(receivedData.gyroY) + "#" + String(receivedData.gyroZ) + "#" +
-    String(receivedData.lat, 6) + "#" + String(receivedData.lon, 6) + "#" + receivedData.deviceName;
-  server.send(200, "text/plain", recievedData);
+  String receivedData =
+    String(receivedData1.accX) + "#" + String(receivedData1.accY) + "#" + String(receivedData1.accZ) + "#" +
+    String(receivedData1.gyroX) + "#" + String(receivedData1.gyroY) + "#" + String(receivedData1.gyroZ) + "#" +
+    String(receivedData2.lat, 6) + "#" + String(receivedData2.lon, 6) + "#" + receivedData2.deviceName;
+  server.send(200, "text/plain", receivedData);
 }
 
 void writeStringToEEPROM(String str, int address) {
@@ -230,9 +241,9 @@ void sendDataToServer() {
   printData();
 
   // Check if data is zero
-  if (receivedData.accX == 0 && receivedData.accY == 0 && receivedData.accZ == 0 &&
-      receivedData.gyroX == 0 && receivedData.gyroY == 0 && receivedData.gyroZ == 0 &&
-      receivedData.lat == 0 && receivedData.lon == 0) {
+  if (receivedData1.accX == 0 && receivedData1.accY == 0 && receivedData1.accZ == 0 &&
+      receivedData1.gyroX == 0 && receivedData1.gyroY == 0 && receivedData1.gyroZ == 0 &&
+      receivedData2.lat == 0 && receivedData2.lon == 0) {
     Serial.println("All data values are zero, not sending to server.");
     return;
   }
@@ -242,15 +253,15 @@ void sendDataToServer() {
 
     // Construct the URL with the query parameters
     String url = "https://nodemcu.hyantalm.com/save_data.php";
-    url += "?accX=" + String(receivedData.accX, 6) +
-           "&accY=" + String(receivedData.accY, 6) +
-           "&accZ=" + String(receivedData.accZ, 6) +
-           "&gyroX=" + String(receivedData.gyroX, 6) +
-           "&gyroY=" + String(receivedData.gyroY, 6) +
-           "&gyroZ=" + String(receivedData.gyroZ, 6) +
-           "&lat=" + String(receivedData.lat, 6) +
-           "&lon=" + String(receivedData.lon, 6) +
-           "&deviceName=" + urlencode(receivedData.deviceName);
+    url += "?accX=" + String(receivedData1.accX, 6) +
+           "&accY=" + String(receivedData1.accY, 6) +
+           "&accZ=" + String(receivedData1.accZ, 6) +
+           "&gyroX=" + String(receivedData1.gyroX, 6) +
+           "&gyroY=" + String(receivedData1.gyroY, 6) +
+           "&gyroZ=" + String(receivedData1.gyroZ, 6) +
+           "&lat=" + String(receivedData2.lat, 6) +
+           "&lon=" + String(receivedData2.lon, 6) +
+           "&deviceName=" + urlencode(receivedData2.deviceName);
 
     // Print the URL for debugging
     Serial.println("URL: " + url);
@@ -261,14 +272,14 @@ void sendDataToServer() {
 
     if (httpResponseCode > 0) {
       String response = http.getString();
-      receivedData.accX=0;
-      receivedData.accY=0;
-      receivedData.accZ=0;
-      receivedData.gyroX=0;
-      receivedData.gyroY=0;
-      receivedData.gyroZ=0;
-      receivedData.lat=0;
-      receivedData.lon=0;
+      receivedData1.accX=0;
+      receivedData1.accY=0;
+      receivedData1.accZ=0;
+      receivedData1.gyroX=0;
+      receivedData1.gyroY=0;
+      receivedData1.gyroZ=0;
+      receivedData2.lat=0;
+      receivedData2.lon=0;
       Serial.println("HTTP Response code: " + String(httpResponseCode));
       Serial.println("Server response: " + response);
       Serial.println("Data successfully sent to the server.");
