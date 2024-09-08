@@ -1,4 +1,4 @@
-To connect an nRF24L01 module to an ESP32, you'll need to make the following connections:
+To connect an nRF24L01 module to an ESP32, we'll need to make the following connections:
 
 VCC (nRF24L01) to 3.3V (ESP32)
 GND (nRF24L01) to GND (ESP32)
@@ -31,5 +31,5 @@ SDA of MPU6050 to GPIO 21 of ESP32
 
 
 connect the gps :
-rx ----16
-tx----- 17
+rx ----17
+tx----- 16

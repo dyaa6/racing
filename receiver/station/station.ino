@@ -224,27 +224,44 @@ void writeStringToEEPROM(String str, int address) {
 }
 
 void format() {
-  String message = "Data Formatted!";
-  server.send(200, "text/plain", message);
+  for (int i = 0; i < 590; i++) {
+    EEPROM.write(i, 0); // Set each byte in EEPROM to 0
+  }
+  EEPROM.commit(); 
+  server.send(200, "text/plain", "erased");
+  delay(800);
+  //ESP.reset();
+  ESP.restart();
+}
+void formatAll() {
+    for (int i = 0; i < EEPROM.length(); i++) {
+        EEPROM.write(i, 0); // Set each byte in EEPROM to 0
+    }
+    EEPROM.commit();
+    server.send(200, "text/plain", "Memory will be formatted");
+    delay(800);
+    ESP.restart();
 }
 
-void formatAll() {
-  String message = "Data Formatted!";
-  server.send(200, "text/plain", message);
-}
+
 
 void handleMemory() {
-  server.send(200, "text/plain", "Memory has been printed");
+    String eepromContent = "";
+    // Read and display the entire EEPROM content
+    for (int i = 0; i < EEPROM.length(); i++) {
+        byte value = EEPROM.read(i);
+        eepromContent += String(value) + "  ";
+    }
+    server.send(200, "text/plain", eepromContent);
 }
 
 void sendDataToServer() {
   printData();
 
   // Check if data is zero
-  if (receivedData1.accX == 0 && receivedData1.accY == 0 && receivedData1.accZ == 0 &&
-      receivedData1.gyroX == 0 && receivedData1.gyroY == 0 && receivedData1.gyroZ == 0 &&
-      receivedData2.lat == 0 && receivedData2.lon == 0) {
-    Serial.println("All data values are zero, not sending to server.");
+  if (receivedData1.accX == 0 || receivedData1.accY == 0 || receivedData1.accZ == 0 ||
+      receivedData1.gyroX == 0 || receivedData1.gyroY == 0 || receivedData1.gyroZ == 0) {
+    Serial.println("Some data values are zero, not sending to server.");
     return;
   }
 

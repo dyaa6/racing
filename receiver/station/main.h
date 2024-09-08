@@ -298,7 +298,7 @@ h2{
 setInterval(()=>{
         new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            const url = 'http://192.168.5.106/state';
+            const url = 'http://192.168.5.100/state';
             xhr.onreadystatechange = async() => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {

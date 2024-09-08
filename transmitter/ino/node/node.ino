@@ -160,11 +160,11 @@ void setupSensors() {
 
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
-    while (1) { delay(10); }
+    //while (1) { delay(10); }
   }
  
-  mpu.setAccelerometerRange(MPU6050_RANGE_2_G);
-  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu.setAccelerometerRange(MPU6050_RANGE_16_G);//less sensitive
+  mpu.setGyroRange(MPU6050_RANGE_1000_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
 
   if (!radio.begin()) {
@@ -297,13 +297,28 @@ void formatAll() {
 void readMPU6050() {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
+
+  // Apply offsets to the accelerometer readings
   sensorData1.accX = a.acceleration.x;
   sensorData1.accY = a.acceleration.y;
   sensorData1.accZ = a.acceleration.z;
+
+  // Apply offsets to the gyroscope readings
   sensorData1.gyroX = g.gyro.x;
   sensorData1.gyroY = g.gyro.y;
   sensorData1.gyroZ = g.gyro.z;
+
+  //  // Apply offsets to the accelerometer readings
+  // sensorData1.accX = a.acceleration.x + 0.18;
+  // sensorData1.accY = a.acceleration.y - 0.12;
+  // sensorData1.accZ = a.acceleration.z - 10.58;
+
+  // // Apply offsets to the gyroscope readings
+  // sensorData1.gyroX = g.gyro.x + 0.04;
+  // sensorData1.gyroY = g.gyro.y - 0.07;
+  // sensorData1.gyroZ = g.gyro.z - 0.01;
 }
+
 
 void readGPS() {
   while (SerialGPS.available() > 0) {
